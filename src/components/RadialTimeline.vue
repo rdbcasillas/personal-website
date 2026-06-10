@@ -530,6 +530,21 @@ onMounted(() => {
 
 onMounted(() => phoneQuery && phoneQuery.addEventListener("change", onPhoneChange));
 onUnmounted(() => phoneQuery && phoneQuery.removeEventListener("change", onPhoneChange));
+
+// Clicking anywhere outside the card (and off the markers/labels, whose own
+// handlers manage selection) dismisses it.
+function onDocumentClick(e) {
+  if (!selectedEntry.value) return;
+  if (
+    e.target.closest(".detail-card") ||
+    e.target.closest(".marker-hit") ||
+    e.target.closest(".entry-group")
+  )
+    return;
+  selectedEntry.value = null;
+}
+onMounted(() => document.addEventListener("click", onDocumentClick));
+onUnmounted(() => document.removeEventListener("click", onDocumentClick));
 </script>
 
 <template>

@@ -72,7 +72,7 @@
       "details": [
         "Built Flask web tools that automated the molecular diagnostics lab's bioinformatics workflow.",
         "Monitored the clinical NGS workflow and developed variant calling and annotation pipelines.",
-        "Designed VIRAS, an interactive tool for analyzing nucleotide mismatches between patients — published in Biology of Blood and Marrow Transplantation.",
+        "Designed VIRAS, an interactive tool for analyzing nucleotide mismatches between patients.",
         "Created d3.js visualization tools investigators used to explore NGS and patient report data."
       ],
       "lanes": { "where": "Research & Visualization", "how": "Building" },
@@ -100,9 +100,9 @@
       "summary": "Pipelines and web tools for axon growth research.",
       "details": [
         "Solo developer for a lab working to cure spinal cord injury.",
-        "Built pipelines that discovered novel transcription factor combinations regulating axon growth — published in Nature Communications.",
+        "Built pipelines that discovered novel transcription factor combinations regulating axon growth.",
         "Created a web tool for visualizing ATAC-Seq, RNA-Seq, and histone ChIP-Seq data across stages of mouse development.",
-        "Built a site that visualizes and quantifies supraspinal neurons — part of work published in eLife."
+        "Built a site that visualizes and quantifies supraspinal neurons."
       ],
       "lanes": { "where": "Research & Visualization", "how": "Building" },
       "icon": null
@@ -169,9 +169,8 @@
       "organization": "EA Infrastructure Fund",
       "summary": "Rationality workshops in Bangalore and Hyderabad.",
       "details": [
-        "Designed and ran 12 hands-on workshops in Bangalore and Hyderabad on thinking clearer, deciding better, and catching biases.",
-        "Talk and workshop at EAGx Delhi: the planning fallacy — why we underestimate time and how to fix it.",
-        "Calibration workshop at EAGx Bangalore, built around predicting famous psychology experiments with confidence intervals."
+        "Designing and running 12 hands-on workshops in Bangalore and Hyderabad on thinking clearer, deciding better, and catching biases.",
+        "Grant-funded work, delivered as a contractor with Effective Ventures."
       ],
       "lanes": { "where": "Pedagogy & Community", "how": "Teaching" },
       "icon": null

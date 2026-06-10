@@ -108,8 +108,50 @@ const moreProjects = [
   },
 ];
 
+const publications = [
+  {
+    year: "2022",
+    title:
+      "Brain-wide analysis of the supraspinal connectome reveals anatomical correlates to functional recovery after spinal injury",
+    journal: "eLife",
+    url: "https://elifesciences.org/articles/76254",
+  },
+  {
+    year: "2021",
+    title: "Co-occupancy identifies transcription factor co-operation for axon growth",
+    journal: "Nature Communications",
+    url: "https://www.nature.com/articles/s41467-021-22828-3",
+  },
+  {
+    year: "2018",
+    title:
+      "Developmental chromatin restriction of pro-growth gene networks acts as an epigenetic barrier to axon regeneration in cortical neurons",
+    journal: "Developmental Neurobiology",
+    url: "https://www.biorxiv.org/content/10.1101/259408v1",
+  },
+  {
+    year: "2018",
+    title:
+      "KLF6 and STAT3 co-occupy regulatory DNA and functionally synergize to promote axon growth in CNS neurons",
+    journal: "Scientific Reports",
+    url: "https://www.nature.com/articles/s41598-018-31101-5",
+  },
+  {
+    year: "2018",
+    title:
+      "Direct HLA genetic comparisons identify highly matched unrelated donor-recipient pairs with improved transplantation outcome",
+    journal: "Biology of Blood and Marrow Transplantation",
+    url: "https://pubmed.ncbi.nlm.nih.gov/30537549/",
+  },
+];
+
 const sectionRef = ref(null);
-useBoardReveal(sectionRef, [".building-card", ".polaroid, .sticky", ".more-card"]);
+useBoardReveal(sectionRef, [
+  ".building-card",
+  ".polaroid, .sticky",
+  ".more-card",
+  ".pub-item",
+]);
 </script>
 
 <template>
@@ -265,6 +307,24 @@ useBoardReveal(sectionRef, [".building-card", ".polaroid, .sticky", ".more-card"
         </span>
         <p>{{ p.tagline }}</p>
       </component>
+    </div>
+
+    <p class="block-label">Publications</p>
+    <div class="pub-sheet">
+      <a
+        v-for="pub in publications"
+        :key="pub.url"
+        class="pub-item"
+        :href="pub.url"
+        target="_blank"
+        rel="noopener"
+      >
+        <span class="pub-year">{{ pub.year }}</span>
+        <span class="pub-body">
+          <span class="pub-title">{{ pub.title }}</span>
+          <em class="pub-journal">{{ pub.journal }}</em>
+        </span>
+      </a>
     </div>
   </section>
 </template>
@@ -762,6 +822,69 @@ a.more-card:hover {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.5;
+}
+
+/* --- Publications: a ruled sheet of papers ---------------------------------- */
+.pub-sheet {
+  max-width: 720px;
+  padding: 10px 22px;
+  background: repeating-linear-gradient(
+      180deg,
+      transparent,
+      transparent 31px,
+      rgba(44, 111, 147, 0.1) 31px,
+      rgba(44, 111, 147, 0.1) 32px
+    ),
+    var(--paper);
+  border: 1px solid rgba(24, 39, 36, 0.12);
+  box-shadow: 0 10px 26px rgba(24, 39, 36, 0.08);
+  transform: rotate(-0.25deg);
+}
+
+.pub-item {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  padding: 12px 0;
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(24, 39, 36, 0.12);
+}
+
+.pub-item:last-child {
+  border-bottom: none;
+}
+
+.pub-year {
+  flex: 0 0 auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+}
+
+.pub-body {
+  display: block;
+}
+
+.pub-title {
+  display: block;
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.pub-item:hover .pub-title {
+  text-decoration: underline;
+  text-decoration-color: var(--green);
+  text-underline-offset: 3px;
+}
+
+.pub-journal {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--muted);
 }
 
 @media (max-width: 860px) {
