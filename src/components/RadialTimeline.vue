@@ -187,6 +187,12 @@ const phoneQuery =
   typeof window !== "undefined" ? window.matchMedia("(max-width: 640px)") : null;
 const isPhone = ref(phoneQuery ? phoneQuery.matches : false);
 const onPhoneChange = (e) => (isPhone.value = e.matches);
+
+// Desktop keeps wide margins for leader-line labels; the phone has none of
+// those, so crop the viewBox tight around the spiral to render it larger.
+const chartViewBox = computed(() =>
+  isPhone.value ? "25 25 770 770" : `-70 -70 ${size + 140} ${size + 140}`
+);
 const curvedOffset = arcWidth / 2 + 10; // radial distance of curved text from strand center
 
 // A path that text rides along, just outside the arc. Reversed on the lower
@@ -194,12 +200,18 @@ const curvedOffset = arcWidth / 2 + 10; // radial distance of curved text from s
 function arcTextPath(startY, endY) {
   const midAngle = yearToAngle((startY + endY) / 2);
   const flip = Math.sin(midAngle) > 0.02;
+  // Flipped (lower-half) text body extends radially INWARD from its baseline.
+  // At the phone font size that buries it in the strand; pushing it outward
+  // instead collides with the year ticks. So on phone, flipped labels sit
+  // just inside the strand — the gap between winds has plenty of room.
+  const radialOffset =
+    flip && isPhone.value ? -(arcWidth / 2 + 6) : curvedOffset;
   const pts = [];
   for (let i = 0; i <= pathSteps; i++) {
     const t = i / pathSteps;
     const year = startY + t * (endY - startY);
     const angle = yearToAngle(year);
-    const r = yearToRadius(year) + curvedOffset;
+    const r = yearToRadius(year) + radialOffset;
     pts.push([ptX(angle, r), ptY(angle, r)]);
   }
   if (flip) pts.reverse();
@@ -492,12 +504,18 @@ onUnmounted(() => phoneQuery && phoneQuery.removeEventListener("change", onPhone
       </span>
     </div>
 
+    <p v-if="!hasExplored" class="tap-hint">
+      <span class="tap-hint-arrow" aria-hidden="true">↓</span>
+      Tap any dot to read that chapter
+      <span class="tap-hint-alt">prefer plain reading? flip to "List" above</span>
+    </p>
+
     <div class="radial-chart-container">
       <svg
         ref="svgRef"
         class="radial-svg"
         :class="{ 'draw-pending': pendingDraw, unexplored: !hasExplored }"
-        :viewBox="`-70 -70 ${size + 140} ${size + 140}`"
+        :viewBox="chartViewBox"
         preserveAspectRatio="xMidYMid meet"
       >
         <!-- Center label -->
@@ -696,10 +714,6 @@ onUnmounted(() => phoneQuery && phoneQuery.removeEventListener("change", onPhone
       </Transition>
     </div>
 
-    <p v-if="!hasExplored" class="tap-hint">
-      <span class="tap-hint-arrow" aria-hidden="true">↑</span>
-      Tap any dot to read that chapter
-    </p>
   </div>
 </template>
 
@@ -1018,8 +1032,9 @@ onUnmounted(() => phoneQuery && phoneQuery.removeEventListener("change", onPhone
 
 .tap-hint {
   display: none;
-  margin: 10px auto 0;
+  margin: 2px auto 14px;
   padding: 7px 14px;
+  text-align: center;
   width: fit-content;
   font-family: var(--mono);
   font-size: 12px;
@@ -1037,6 +1052,15 @@ onUnmounted(() => phoneQuery && phoneQuery.removeEventListener("change", onPhone
   margin-right: 4px;
   color: var(--green);
   font-weight: 700;
+}
+
+.tap-hint-alt {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  color: var(--muted);
 }
 
 @media (prefers-reduced-motion: no-preference) {
