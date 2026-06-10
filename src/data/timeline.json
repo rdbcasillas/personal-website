@@ -29,6 +29,10 @@
       "title": "Software Engineer",
       "organization": "Tech Mahindra",
       "summary": "Production support and automation for AT&T systems.",
+      "details": [
+        "Led production support for AT&T server infrastructure.",
+        "Designed and maintained a library of Bash scripts automating server monitoring and status updates."
+      ],
       "lanes": { "where": "Product & Industry", "how": "Building" },
       "icon": null
     },
@@ -50,6 +54,10 @@
       "title": "Research Assistant",
       "organization": "Marquette University",
       "summary": "SNPredict, RNA-Seq and ChIP-Seq workflow automation.",
+      "details": [
+        "Designed and built SNPredict, a tool that predicts rare somatic variants using machine learning (kNN, LinearSVC).",
+        "Automated RNA-Seq and ChIP-Seq workflows with custom shell scripts."
+      ],
       "lanes": { "where": "Research & Visualization", "how": "Building" },
       "icon": null
     },
@@ -61,6 +69,12 @@
       "organization": "Blood Center of Wisconsin",
       "shortLabel": "BCW",
       "summary": "Clinical genomics workflows, NGS pipelines, and D3 visualization tools.",
+      "details": [
+        "Built Flask web tools that automated the molecular diagnostics lab's bioinformatics workflow.",
+        "Monitored the clinical NGS workflow and developed variant calling and annotation pipelines.",
+        "Designed VIRAS, an interactive tool for analyzing nucleotide mismatches between patients — published in Biology of Blood and Marrow Transplantation.",
+        "Created d3.js visualization tools investigators used to explore NGS and patient report data."
+      ],
       "lanes": { "where": "Research & Visualization", "how": "Building" },
       "icon": null
     },
@@ -84,6 +98,12 @@
       "label": "Marquette University",
       "shortLabel": "MU",
       "summary": "Pipelines and web tools for axon growth research.",
+      "details": [
+        "Solo developer for a lab working to cure spinal cord injury.",
+        "Built pipelines that discovered novel transcription factor combinations regulating axon growth — published in Nature Communications.",
+        "Created a web tool for visualizing ATAC-Seq, RNA-Seq, and histone ChIP-Seq data across stages of mouse development.",
+        "Built a site that visualizes and quantifies supraspinal neurons — part of work published in eLife."
+      ],
       "lanes": { "where": "Research & Visualization", "how": "Building" },
       "icon": null
     },
@@ -94,6 +114,10 @@
       "title": "Data Scientist",
       "organization": "Indx.Ai",
       "summary": "Cancer mutation annotation app for oncologists.",
+      "details": [
+        "Built a web app from scratch that identifies and annotates rare mutations in cancer patients.",
+        "Gave oncologists an interactive interface to track patients and discover appropriate treatments."
+      ],
       "lanes": { "where": "Product & Industry", "how": "Building" },
       "icon": null
     },
@@ -105,6 +129,12 @@
       "organization": "OneCell Diagnostics",
       "shortLabel": "OneCell",
       "summary": "iCare platform, oncology products, and bioinformatics teams.",
+      "details": [
+        "Built and managed development of iCare — a platform that helps oncologists read patients' mutational profiles and match them to cancer therapies.",
+        "Led a team of software developers and bioinformaticians across iCare projects.",
+        "Designed the interfaces and bioinformatics pipelines behind flagship products OncoDx and OncoPredikt.",
+        "Owned deployments end to end, through every phase of the development lifecycle."
+      ],
       "lanes": { "where": "Product & Industry", "how": "Leading" },
       "icon": null
     },
@@ -115,6 +145,9 @@
       "title": "Co-founder",
       "organization": "Portal",
       "summary": "Community for epistemic and personal growth.",
+      "details": [
+        "Building a community space that pairs epistemic and emotional growth with inspiring impactful work on local and global catastrophic risks."
+      ],
       "lanes": { "where": "Pedagogy & Community", "how": "Leading" },
       "icon": null
     },
@@ -135,6 +168,11 @@
       "title": "Workshop Facilitator",
       "organization": "EA Infrastructure Fund",
       "summary": "Rationality workshops in Bangalore and Hyderabad.",
+      "details": [
+        "Designed and ran 12 hands-on workshops in Bangalore and Hyderabad on thinking clearer, deciding better, and catching biases.",
+        "Talk and workshop at EAGx Delhi: the planning fallacy — why we underestimate time and how to fix it.",
+        "Calibration workshop at EAGx Bangalore, built around predicting famous psychology experiments with confidence intervals."
+      ],
       "lanes": { "where": "Pedagogy & Community", "how": "Teaching" },
       "icon": null
     },
@@ -145,6 +183,10 @@
       "title": "Facilitator, Futurekind Fellowship",
       "organization": "Electric Sheep",
       "summary": "Futurekind Fellowship cohorts and AI tools for animal welfare.",
+      "details": [
+        "Facilitating two Futurekind Fellowship cohorts.",
+        "Helping build AI tools for animal welfare as part of the Builder Track."
+      ],
       "lanes": { "where": "Pedagogy & Community", "how": "Teaching" },
       "icon": null
     }
