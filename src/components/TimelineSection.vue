@@ -43,6 +43,17 @@ const sortedEntries = computed(() =>
   [...timelineData.entries].sort((a, b) => a.start - b.start)
 );
 
+// "+ the full story" disclosures in the list cards (keyed by title+start)
+const expandedKeys = ref(new Set());
+const entryKey = (e) => `${e.title}-${e.start}`;
+const isExpanded = (e) => expandedKeys.value.has(entryKey(e));
+function toggleDetails(entry) {
+  const key = entryKey(entry);
+  const next = new Set(expandedKeys.value);
+  next.has(key) ? next.delete(key) : next.add(key);
+  expandedKeys.value = next;
+}
+
 function entryLane(entry) {
   return entry.lanes.where;
 }
@@ -243,6 +254,14 @@ defineExpose({ open });
               <h3>{{ entry.title }}</h3>
               <p class="tl-org">{{ entry.organization }}</p>
               <p class="tl-summary">{{ entry.summary }}</p>
+              <template v-if="entry.details && entry.details.length">
+                <button class="tl-more" @click="toggleDetails(entry)">
+                  {{ isExpanded(entry) ? "− less" : "+ the full story" }}
+                </button>
+                <ul v-if="isExpanded(entry)" class="tl-details">
+                  <li v-for="(line, j) in entry.details" :key="j">{{ line }}</li>
+                </ul>
+              </template>
             </div>
           </article>
         </div>
@@ -473,6 +492,36 @@ defineExpose({ open });
   color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
+}
+
+.tl-more {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--green);
+  cursor: pointer;
+  border-bottom: 1px dashed currentColor;
+}
+
+.tl-details {
+  margin: 8px 0 0;
+  padding-left: 16px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.tl-details li {
+  margin-bottom: 5px;
+}
+
+.tl-details li::marker {
+  color: var(--green);
 }
 
 @media (max-width: 640px) {

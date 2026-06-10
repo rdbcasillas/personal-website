@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import gsap from "gsap";
 import timelineData from "../data/timeline.json";
 
@@ -366,6 +366,10 @@ function updateTooltipPos(event) {
 // --- Storytelling: click/tap an entry to open its index card ------------------
 const selectedEntry = ref(null);
 const hasExplored = ref(false);
+// "+ the full story" disclosure inside the card; collapses on every
+// selection change so each chapter opens compact.
+const detailsOpen = ref(false);
+watch(selectedEntry, () => (detailsOpen.value = false));
 
 // allMarkers is enriched (lane/color for the active scheme) and chronological
 const chronological = computed(() => allMarkers.value);
@@ -731,6 +735,14 @@ onUnmounted(() => phoneQuery && phoneQuery.removeEventListener("change", onPhone
           <h3>{{ selectedEntry.title }}</h3>
           <span class="detail-org">{{ selectedEntry.organization }}</span>
           <p class="detail-summary">{{ selectedEntry.summary }}</p>
+          <template v-if="selectedEntry.details && selectedEntry.details.length">
+            <button class="detail-more" @click="detailsOpen = !detailsOpen">
+              {{ detailsOpen ? "− less" : "+ the full story" }}
+            </button>
+            <ul v-if="detailsOpen" class="detail-list">
+              <li v-for="(line, i) in selectedEntry.details" :key="i">{{ line }}</li>
+            </ul>
+          </template>
           <div class="detail-nav">
             <button :disabled="selectedIndex <= 0" @click="stepSelection(-1)">
               ← Earlier
@@ -939,6 +951,9 @@ onUnmounted(() => phoneQuery && phoneQuery.removeEventListener("change", onPhone
   box-shadow: 0 16px 36px rgba(24, 39, 36, 0.16);
   transform: rotate(1.2deg);
   z-index: 11;
+  /* Expanded "full story" bullets can get tall on desktop */
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .detail-pin {
@@ -1018,6 +1033,40 @@ onUnmounted(() => phoneQuery && phoneQuery.removeEventListener("change", onPhone
   font-size: 13px;
   color: var(--muted);
   line-height: 1.5;
+}
+
+.detail-more {
+  display: inline-block;
+  margin: -6px 0 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--green);
+  cursor: pointer;
+  border-bottom: 1px dashed currentColor;
+}
+
+.detail-more:hover {
+  color: var(--ink);
+}
+
+.detail-list {
+  margin: 0 0 14px;
+  padding-left: 16px;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.detail-list li {
+  margin-bottom: 6px;
+}
+
+.detail-list li::marker {
+  color: var(--green);
 }
 
 .detail-nav {
