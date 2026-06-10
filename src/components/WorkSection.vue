@@ -1,8 +1,12 @@
 <script setup>
+import { ref } from "vue";
+import { useBoardReveal } from "../composables/useBoardReveal.js";
 import previewWorkshops from "../assets/previews/rationality-workshops.jpg";
 import previewResilience from "../assets/previews/rational-resilience.jpg";
 import previewPortal from "../assets/previews/portal.jpg";
-import previewSubstack from "../assets/previews/clear-and-muddy.png";
+import previewSubstack from "../assets/previews/clear-and-muddy.jpg";
+import shotMouseBrainDev from "../assets/previews/mousebraindev.jpg";
+import shot3dBrain from "../assets/previews/3dbrain.jpg";
 
 // Flagship, currently-active projects. Each shows a live snapshot of the site.
 const building = [
@@ -61,48 +65,55 @@ const talks = [
   },
 ];
 
+// The archive: past projects filed away as index cards. `shot` pins a small
+// screenshot to the card as attached evidence.
 const moreProjects = [
   {
     name: "Mouse Brain Development DB",
     tag: "Open Source",
+    years: "2019 – 2020",
     url: "https://mousebraindev.com",
+    shot: shotMouseBrainDev,
     tagline:
       "Interactive visualizations for time-series NGS experiments on murine whole cortex.",
   },
   {
     name: "3D Mouse Brain",
     tag: "Open Source",
+    years: "2020 – 2021",
     url: "https://3dbrain.netlify.app",
+    shot: shot3dBrain,
     tagline:
       "3D visualization and quantification of supra-spinal neurons across cervical, thoracic, and lumbar segments.",
   },
   {
     name: "Introduction to Applied Rationality",
     tag: "Course",
+    years: "2021",
     url: "https://hyperlink.academy/courses/introduction-to-applied-rationality/54",
+    shot: null,
+    doodle: "course",
     tagline:
       "A course exploring frameworks and techniques for achieving what we most want with the resources we have.",
   },
   {
     name: "Cerebral",
     tag: "Podcast",
+    years: "2020 – 2021",
     url: "https://open.spotify.com/show/79oICYy7ndxZIrQQWunirp",
+    shot: null,
+    doodle: "podcast",
     tagline:
       "A podcast on human biases and how to improve thinking and decision-making.",
   },
-  {
-    name: "Hyderabad Rationality Meetup",
-    tag: "Meetup",
-    url: null,
-    tagline:
-      "A bi-weekly meetup for improving epistemic and instrumental rationality.",
-  },
 ];
 
+const sectionRef = ref(null);
+useBoardReveal(sectionRef, [".building-card", ".polaroid, .sticky", ".more-card"]);
 </script>
 
 <template>
-  <section class="section work-section" id="work">
+  <section class="section work-section" id="work" ref="sectionRef">
     <div class="section-intro">
       <p class="kicker">Work</p>
       <h2>Things I'm building, writing, and exploring.</h2>
@@ -190,21 +201,67 @@ const moreProjects = [
       </div>
     </div>
 
-    <!-- More projects -->
-    <p class="block-label">More projects</p>
+    <!-- More projects: the archive -->
+    <p class="block-label">From the archive</p>
     <div class="more-grid">
       <component
         :is="p.url ? 'a' : 'div'"
         v-for="p in moreProjects"
         :key="p.name"
         class="more-card"
+        :class="`tab-${p.tag.toLowerCase().replace(/\s+/g, '-')}`"
         :href="p.url || null"
         :target="p.url ? '_blank' : null"
         :rel="p.url ? 'noopener' : null"
       >
+        <span class="archive-tab">{{ p.tag }}</span>
+        <span v-if="p.shot" class="archive-shot">
+          <img :src="p.shot" :alt="`${p.name} screenshot`" loading="lazy" />
+        </span>
+        <!-- Hand-drawn ink doodles for cards without screenshots -->
+        <span v-else-if="p.doodle" class="archive-shot archive-doodle" aria-hidden="true">
+          <svg v-if="p.doodle === 'course'" viewBox="0 0 320 120" fill="none">
+            <!-- Open book -->
+            <path d="M115,42 L115,90" stroke="#182724" stroke-width="2.2" stroke-linecap="round" />
+            <path d="M115,42 C96,31 64,33 44,46 L44,94 C64,81 96,79 115,90" stroke="#2c6f93" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M115,42 C134,31 166,33 186,46 L186,94 C166,81 134,79 115,90" stroke="#2c6f93" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M58,54 q21,-7 42,-2" stroke="#2c6f93" stroke-width="1.6" stroke-linecap="round" opacity="0.55" />
+            <path d="M58,67 q21,-7 42,-2" stroke="#2c6f93" stroke-width="1.6" stroke-linecap="round" opacity="0.55" />
+            <path d="M130,52 q21,-5 42,2" stroke="#2c6f93" stroke-width="1.6" stroke-linecap="round" opacity="0.55" />
+            <path d="M130,65 q21,-5 42,2" stroke="#2c6f93" stroke-width="1.6" stroke-linecap="round" opacity="0.55" />
+            <!-- Dashed thought-arrow rising to a lightbulb -->
+            <path d="M192,72 Q214,62 226,46" stroke="#182724" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="4 6" />
+            <path d="M221,48 l6,-3 0,7" stroke="#182724" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Lightbulb -->
+            <circle cx="244" cy="32" r="13" stroke="#e2b84b" stroke-width="2.2" />
+            <path d="M239,46 q5,4 10,0" stroke="#e2b84b" stroke-width="2" stroke-linecap="round" />
+            <path d="M240,51 h8 M242,56 h4" stroke="#182724" stroke-width="1.8" stroke-linecap="round" />
+            <path d="M262,20 l7,-6 M264,34 l9,1 M256,12 l3,-8" stroke="#e2b84b" stroke-width="1.8" stroke-linecap="round" />
+            <!-- Little idea-graph -->
+            <circle cx="272" cy="92" r="5" stroke="#2c6f93" stroke-width="1.8" />
+            <circle cx="297" cy="74" r="5" stroke="#2c6f93" stroke-width="1.8" />
+            <circle cx="303" cy="100" r="5" stroke="#2c6f93" stroke-width="1.8" />
+            <path d="M276,88 l16,-10 M277,95 l21,4 M298,79 l4,16" stroke="#182724" stroke-width="1.4" stroke-linecap="round" opacity="0.6" />
+          </svg>
+          <svg v-else viewBox="0 0 320 120" fill="none">
+            <!-- Microphone -->
+            <rect x="72" y="18" width="34" height="58" rx="17" stroke="#d75f49" stroke-width="2.2" />
+            <path d="M79,36 h20 M79,46 h20 M79,56 h20" stroke="#d75f49" stroke-width="1.6" stroke-linecap="round" opacity="0.55" />
+            <path d="M58,58 a31,31 0 0 0 62,0" stroke="#182724" stroke-width="2.2" stroke-linecap="round" />
+            <path d="M89,89 v14" stroke="#182724" stroke-width="2.2" stroke-linecap="round" />
+            <path d="M71,104 h36" stroke="#182724" stroke-width="2.2" stroke-linecap="round" />
+            <!-- Sound arcs -->
+            <path d="M132,36 q13,15 0,30" stroke="#d75f49" stroke-width="2" stroke-linecap="round" />
+            <path d="M145,28 q21,23 0,46" stroke="#182724" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="4 6" />
+            <path d="M158,21 q29,30 0,60" stroke="#d75f49" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+            <!-- Waveform -->
+            <path d="M196,53 v14 M205,44 v32 M214,55 v10 M223,34 v52 M232,49 v22 M241,41 v38 M250,55 v10 M259,46 v28 M268,52 v16 M277,57 v6 M286,44 v32 M295,53 v14" stroke="#182724" stroke-width="2.6" stroke-linecap="round" opacity="0.75" />
+            <path d="M223,34 v52 M259,46 v28" stroke="#d75f49" stroke-width="2.6" stroke-linecap="round" />
+          </svg>
+        </span>
         <span class="more-head">
           <h3>{{ p.name }}</h3>
-          <span class="tag">{{ p.tag }}</span>
+          <span v-if="p.years" class="archive-years">{{ p.years }}</span>
         </span>
         <p>{{ p.tagline }}</p>
       </component>
@@ -256,19 +313,44 @@ h3 {
 }
 
 .building-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--line);
   background: rgba(255, 253, 248, 0.7);
   text-decoration: none;
   color: var(--ink);
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Slight hand-placed scatter; cards straighten on hover */
+.building-card:nth-child(3n + 1) { transform: rotate(-0.6deg); }
+.building-card:nth-child(3n + 2) { transform: rotate(0.45deg); }
+.building-card:nth-child(3n) { transform: rotate(-0.3deg); }
+
+/* Translucent tape strip holding each card up */
+.building-card::before {
+  content: "";
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  width: 88px;
+  height: 24px;
+  background: rgba(248, 242, 226, 0.65);
+  border-left: 2px dotted rgba(24, 39, 36, 0.08);
+  border-right: 2px dotted rgba(24, 39, 36, 0.08);
+  box-shadow: 0 1px 3px rgba(24, 39, 36, 0.14);
+  transform: translateX(-50%) rotate(-2deg);
+  z-index: 3;
+}
+
+.building-card:nth-child(even)::before {
+  transform: translateX(-50%) rotate(1.6deg);
 }
 
 .building-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 34px rgba(24, 39, 36, 0.12);
+  transform: rotate(0deg) translateY(-4px);
+  box-shadow: 0 16px 36px rgba(24, 39, 36, 0.14);
 }
 
 .preview {
@@ -538,26 +620,121 @@ h3 {
   border-bottom: 1px solid currentColor;
 }
 
-/* More projects */
+/* From the archive: index cards with folder tabs */
 .more-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 36px 18px;
+  padding-top: 30px; /* room for the tabs */
 }
 
 .more-card {
+  position: relative;
   display: block;
-  padding: 18px 20px;
-  border: 1px solid var(--line);
-  background: rgba(255, 253, 248, 0.5);
+  padding: 18px 20px 16px;
+  border: 1px solid rgba(24, 39, 36, 0.16);
+  /* Ruled index-card lines over paper */
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent,
+      transparent 25px,
+      rgba(44, 111, 147, 0.09) 25px,
+      rgba(44, 111, 147, 0.09) 26px
+    ),
+    var(--paper);
+  box-shadow: 0 10px 24px rgba(24, 39, 36, 0.09);
   text-decoration: none;
   color: var(--ink);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+.more-card:nth-child(odd) { transform: rotate(-0.4deg); }
+.more-card:nth-child(even) { transform: rotate(0.35deg); }
+
 a.more-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 26px rgba(24, 39, 36, 0.1);
+  transform: rotate(0deg) translateY(-3px);
+  box-shadow: 0 16px 34px rgba(24, 39, 36, 0.14);
+}
+
+/* Folder tab peeking above the card */
+.archive-tab {
+  position: absolute;
+  top: -23px;
+  left: 16px;
+  padding: 5px 14px 4px;
+  border: 1px solid rgba(24, 39, 36, 0.16);
+  border-bottom: none;
+  border-radius: 7px 7px 0 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tab-open-source .archive-tab {
+  background: #e3efe9;
+  color: var(--green);
+}
+
+.tab-course .archive-tab {
+  background: #e7f0f7;
+  color: var(--blue);
+}
+
+.tab-podcast .archive-tab {
+  background: #f9e9e4;
+  color: var(--coral);
+}
+
+/* Attached evidence: a small taped-on screenshot */
+.archive-shot {
+  position: relative;
+  display: block;
+  margin: 4px 0 14px;
+  padding: 6px;
+  background: #fffdf8;
+  border: 1px solid rgba(24, 39, 36, 0.1);
+  box-shadow: 0 6px 16px rgba(24, 39, 36, 0.1);
+  transform: rotate(-0.8deg);
+}
+
+.more-card:nth-child(even) .archive-shot {
+  transform: rotate(0.7deg);
+}
+
+.archive-shot::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 64px;
+  height: 16px;
+  background: rgba(248, 242, 226, 0.7);
+  border-left: 2px dotted rgba(24, 39, 36, 0.08);
+  border-right: 2px dotted rgba(24, 39, 36, 0.08);
+  box-shadow: 0 1px 3px rgba(24, 39, 36, 0.14);
+  transform: translateX(-50%) rotate(-1.5deg);
+  z-index: 2;
+}
+
+.archive-shot img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  /* Bottom-anchored: both captures have their figures/charts low, prose up top */
+  object-position: left bottom;
+}
+
+.archive-doodle svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background:
+    linear-gradient(90deg, rgba(24, 39, 36, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(24, 39, 36, 0.035) 1px, transparent 1px);
+  background-size: 18px 18px; /* faint graph paper behind the sketch */
 }
 
 .more-head {
@@ -572,7 +749,7 @@ a.more-card:hover {
   font-size: 17px;
 }
 
-.tag {
+.archive-years {
   flex-shrink: 0;
   font-family: var(--mono);
   font-size: 10px;
