@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import gsap from "gsap";
 import timelineData from "../data/timeline.json";
 
@@ -177,6 +177,16 @@ function tickMark(year) {
 // label still fits along its arc, so keep the constant in sync with the CSS.
 const curvedFontSize = 13.5;
 const leaderFontSize = 13.5;
+
+// Phone: the SVG renders at ~0.44 scale (viewBox 820 → ~360px wide), so
+// curved labels need a much larger font to be legible. Only the arcs long
+// enough to host text at this size keep their label — the rest rely on the
+// tap-to-explore card. Keep in sync with the 640px media query CSS.
+const phoneCurvedFontSize = 24;
+const phoneQuery =
+  typeof window !== "undefined" ? window.matchMedia("(max-width: 640px)") : null;
+const isPhone = ref(phoneQuery ? phoneQuery.matches : false);
+const onPhoneChange = (e) => (isPhone.value = e.matches);
 const curvedOffset = arcWidth / 2 + 10; // radial distance of curved text from strand center
 
 // A path that text rides along, just outside the arc. Reversed on the lower
@@ -199,10 +209,13 @@ function arcTextPath(startY, endY) {
 }
 
 // Does the label fit along its arc? If not, it gets a leader line instead.
+// On phone the threshold uses the larger phone font, so only a few long
+// arcs keep curved labels (leader labels are hidden entirely there).
 function fitsCurved(entry) {
   const midR = yearToRadius((entry.start + entry.end) / 2) + curvedOffset;
   const arcLen = Math.abs(yearToAngle(entry.end) - yearToAngle(entry.start)) * midR;
-  const textLen = displayLabel(entry).length * curvedFontSize * 0.6;
+  const fontSize = isPhone.value ? phoneCurvedFontSize : curvedFontSize;
+  const textLen = displayLabel(entry).length * fontSize * 0.6;
   return arcLen > textLen + 12;
 }
 
@@ -465,6 +478,9 @@ onMounted(() => {
   );
   observer.observe(svg);
 });
+
+onMounted(() => phoneQuery && phoneQuery.addEventListener("change", onPhoneChange));
+onUnmounted(() => phoneQuery && phoneQuery.removeEventListener("change", onPhoneChange));
 </script>
 
 <template>
@@ -480,7 +496,7 @@ onMounted(() => {
       <svg
         ref="svgRef"
         class="radial-svg"
-        :class="{ 'draw-pending': pendingDraw }"
+        :class="{ 'draw-pending': pendingDraw, unexplored: !hasExplored }"
         :viewBox="`-70 -70 ${size + 140} ${size + 140}`"
         preserveAspectRatio="xMidYMid meet"
       >
@@ -581,7 +597,7 @@ onMounted(() => {
         <g
           v-for="c in curvedLabels"
           :key="'curve-' + c.title + activeScheme"
-          class="entry-group"
+          class="entry-group entry-curved"
           @mouseenter="onArcEnter(c, $event)"
           @mousemove="onArcMove(c, $event)"
           @mouseleave="onArcLeave"
@@ -603,7 +619,7 @@ onMounted(() => {
         <g
           v-for="d in leaderLabels"
           :key="'lead-' + d.title + d.start + activeScheme"
-          class="entry-group"
+          class="entry-group entry-leader"
           @mouseenter="onArcEnter(d, $event)"
           @mousemove="onArcMove(d, $event)"
           @mouseleave="onArcLeave"
@@ -680,7 +696,10 @@ onMounted(() => {
       </Transition>
     </div>
 
-    <p v-if="!hasExplored" class="tap-hint">Tap a circle to explore the journey</p>
+    <p v-if="!hasExplored" class="tap-hint">
+      <span class="tap-hint-arrow" aria-hidden="true">↑</span>
+      Tap any dot to read that chapter
+    </p>
   </div>
 </template>
 
@@ -999,28 +1018,79 @@ onMounted(() => {
 
 .tap-hint {
   display: none;
-  margin: 4px 0 0;
+  margin: 10px auto 0;
+  padding: 7px 14px;
+  width: fit-content;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  transform: rotate(-0.6deg);
+}
+
+.tap-hint-arrow {
+  display: inline-block;
+  margin-right: 4px;
+  color: var(--green);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tap-hint-arrow {
+    animation: hint-bob 1.4s ease-in-out infinite;
+  }
+}
+
+/* Until the first tap, dots breathe gently to invite interaction (phone only) */
+@media (max-width: 640px) and (prefers-reduced-motion: no-preference) {
+  svg.unexplored:not(.draw-pending) .strand-marker {
+    animation: marker-breathe 1.6s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes hint-bob {
+  0%,
+  100% {
+    transform: translateY(1px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes marker-breathe {
+  from {
+    stroke-width: 2;
+  }
+  to {
+    stroke-width: 5;
+  }
 }
 
 /* --- Phone: decluttered spiral, tap to explore ------------------------------ */
 @media (max-width: 640px) {
-  /* Labels are unreadable at this scale — the index card replaces them */
-  .entry-group,
-  .arc-label,
-  .arc-curved {
+  /* Leader-line labels are unreadable at this scale — the index card
+     replaces them. Long arcs keep a curved label at a much bigger font
+     (fitsCurved() filters with phoneCurvedFontSize, keep in sync). */
+  .entry-leader,
+  .arc-label {
     display: none;
   }
 
+  .arc-curved {
+    font-size: 24px;
+  }
+
   .year-label {
-    font-size: 19px;
+    font-size: 26px;
   }
 
   .center-label {
-    font-size: 28px;
+    font-size: 30px;
   }
 
   /* CSS r overrides the attribute: bigger markers + touch targets */
