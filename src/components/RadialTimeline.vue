@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import gsap from "gsap";
 import timelineData from "../data/timeline.json";
 
 const props = defineProps({
@@ -7,9 +8,13 @@ const props = defineProps({
 });
 
 const svgRef = ref(null);
+// Single lane scheme: "By domain". (A "how" scheme still exists in the data
+// but the UI toggle was removed — domain categories are the keepers.)
 const activeScheme = ref("where");
 const hoveredEntry = ref(null);
 const tooltipPos = ref({ x: 0, y: 0 });
+// Strand/markers/labels stay hidden (via CSS) until the draw animation takes over.
+const pendingDraw = ref(true);
 
 const schemes = timelineData.laneSchemes;
 const entries = timelineData.entries;
@@ -27,6 +32,14 @@ const laneColors = {
   Building: "#0f7b66",
   Leading: "#d75f49",
   Teaching: "#e2b84b",
+};
+
+// Text needs more contrast than strands: yellow is illegible on paper,
+// so labels/tooltips use a darker ochre while arcs keep the bright yellow.
+const labelColors = {
+  ...laneColors,
+  "Pedagogy & Community": "#a8842c",
+  Teaching: "#a8842c",
 };
 
 // --- Geometry ---------------------------------------------------------------
@@ -160,8 +173,10 @@ function tickMark(year) {
   };
 }
 
-const curvedFontSize = 12;
-const leaderFontSize = 12;
+// Bumped from 12 for readability; fitsCurved() uses this to decide if a
+// label still fits along its arc, so keep the constant in sync with the CSS.
+const curvedFontSize = 13.5;
+const leaderFontSize = 13.5;
 const curvedOffset = arcWidth / 2 + 10; // radial distance of curved text from strand center
 
 // A path that text rides along, just outside the arc. Reversed on the lower
@@ -199,6 +214,7 @@ const curvedLabels = computed(() =>
       ...entry,
       lane,
       color: laneColors[lane],
+      labelColor: labelColors[lane],
       label: displayLabel(entry),
       pathId: `arc-text-${idx}-${activeScheme.value}`,
       textPath: arcTextPath(entry.start, entry.end),
@@ -216,6 +232,7 @@ const allMarkers = computed(() =>
       ...entry,
       lane,
       color: laneColors[lane],
+      labelColor: labelColors[lane],
       mx: ptX(angle, r),
       my: ptY(angle, r),
     };
@@ -235,6 +252,7 @@ function resolveLeaderLabels(list) {
       ...entry,
       lane,
       color: laneColors[lane],
+      labelColor: labelColors[lane],
       label: displayLabel(entry),
       lx: ptX(angle, labelR),
       ly: ptY(angle, labelR),
@@ -286,27 +304,171 @@ function updateTooltipPos(event) {
     };
   }
 }
+
+// --- Storytelling: click/tap an entry to open its index card ------------------
+const selectedEntry = ref(null);
+const hasExplored = ref(false);
+
+// allMarkers is enriched (lane/color for the active scheme) and chronological
+const chronological = computed(() => allMarkers.value);
+
+function isSameEntry(a, b) {
+  return a && b && a.title === b.title && a.start === b.start;
+}
+
+function selectEntry(entry) {
+  hasExplored.value = true;
+  if (isSameEntry(selectedEntry.value, entry)) {
+    selectedEntry.value = null; // tap again to dismiss
+    return;
+  }
+  selectedEntry.value =
+    chronological.value.find((m) => isSameEntry(m, entry)) || entry;
+}
+
+const selectedIndex = computed(() =>
+  selectedEntry.value
+    ? chronological.value.findIndex((m) => isSameEntry(m, selectedEntry.value))
+    : -1
+);
+
+function stepSelection(dir) {
+  const next = chronological.value[selectedIndex.value + dir];
+  if (next) selectedEntry.value = next;
+}
+
+// While an entry is selected, the whole strand dims and a highlight overlay
+// traces that entry's actual start→end span (concurrent entries don't own a
+// base segment, so they need their own path anyway).
+const selectedSpan = computed(() => {
+  const sel = selectedEntry.value;
+  if (!sel) return null;
+  return {
+    path: spiralCenterPath(sel.start, Math.min(sel.end, endYear)),
+    color: sel.color,
+  };
+});
+
+function segOpacity(seg) {
+  if (selectedEntry.value) return 0.25;
+  return hoveredEntry.value && hoveredEntry.value.title === seg.title ? 1 : 0.85;
+}
+
+function markerR(m) {
+  if (isSameEntry(m, selectedEntry.value)) return 8;
+  return hoveredEntry.value && hoveredEntry.value.title === m.title ? 7 : 5;
+}
+
+// --- Draw-on-scroll animation -----------------------------------------------
+// The strand draws itself chronologically (stroke-dashoffset), markers pop and
+// labels fade in as the strand reaches their start year. Runs once.
+
+function runDrawAnimation() {
+  const svg = svgRef.value;
+  if (!svg) {
+    pendingDraw.value = false;
+    return;
+  }
+
+  const segEls = Array.from(svg.querySelectorAll(".strand-seg"));
+  const markerEls = Array.from(svg.querySelectorAll(".strand-marker"));
+  const labelEls = Array.from(svg.querySelectorAll(".entry-group"));
+  const prim = primaryEntries.value;
+
+  const lens = segEls.map((el) => el.getTotalLength());
+  const totalLen = lens.reduce((a, b) => a + b, 0);
+  if (!totalLen) {
+    pendingDraw.value = false;
+    return;
+  }
+  const drawDur = 2.4;
+
+  // Each segment owns a time window proportional to its arc length, so the pen
+  // moves at constant speed along the whole strand.
+  let tAcc = 0;
+  const windows = prim.map((entry, i) => {
+    const dur = (lens[i] / totalLen) * drawDur;
+    const segEnd = i < prim.length - 1 ? prim[i + 1].start : endYear;
+    const w = { start: entry.start, end: segEnd, t0: tAcc, dur };
+    tAcc += dur;
+    return w;
+  });
+
+  // When does the pen reach a given year?
+  function timeOfYear(year) {
+    const w = windows.find((win) => year < win.end) || windows[windows.length - 1];
+    const f = Math.min(1, Math.max(0, (year - w.start) / (w.end - w.start || 1)));
+    return w.t0 + f * w.dur;
+  }
+
+  // Prime initial states before unhiding, then let GSAP own the elements.
+  segEls.forEach((el, i) =>
+    gsap.set(el, { strokeDasharray: lens[i], strokeDashoffset: lens[i] })
+  );
+  gsap.set(markerEls, { opacity: 0, attr: { r: 0 } });
+  gsap.set(labelEls, { opacity: 0 });
+  pendingDraw.value = false;
+
+  const tl = gsap.timeline();
+  segEls.forEach((el, i) => {
+    tl.to(
+      el,
+      { strokeDashoffset: 0, duration: windows[i].dur, ease: "none" },
+      windows[i].t0
+    );
+  });
+
+  // Markers pop as the strand passes them (same order as trackedEntries)
+  const markerEntries = trackedEntries.value;
+  markerEls.forEach((el, i) => {
+    const entry = markerEntries[i];
+    if (!entry) return;
+    tl.to(
+      el,
+      { opacity: 1, attr: { r: 5 }, duration: 0.35, ease: "back.out(2.4)" },
+      timeOfYear(entry.start)
+    );
+  });
+
+  // Labels (curved first, then leader groups — matches DOM order)
+  const labelEntries = [...curvedLabels.value, ...leaderLabels.value];
+  labelEls.forEach((el, i) => {
+    const entry = labelEntries[i];
+    if (!entry) return;
+    tl.to(
+      el,
+      { opacity: 1, duration: 0.5, ease: "power2.out" },
+      timeOfYear(entry.start) + 0.15
+    );
+  });
+}
+
+onMounted(() => {
+  const svg = svgRef.value;
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!svg || reduceMotion || typeof IntersectionObserver === "undefined") {
+    pendingDraw.value = false;
+    return;
+  }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          observer.disconnect();
+          runDrawAnimation();
+        }
+      });
+    },
+    { threshold: 0.3 }
+  );
+  observer.observe(svg);
+});
 </script>
 
 <template>
   <div class="radial-wrap">
-    <div class="radial-controls">
-      <button
-        class="scheme-btn"
-        :class="{ active: activeScheme === 'where' }"
-        @click="activeScheme = 'where'"
-      >
-        By domain
-      </button>
-      <button
-        class="scheme-btn"
-        :class="{ active: activeScheme === 'how' }"
-        @click="activeScheme = 'how'"
-      >
-        By mode of work
-      </button>
-    </div>
-
     <div class="radial-legend">
       <span v-for="lane in currentLanes" :key="lane" class="legend-item">
         <span class="legend-dot" :style="{ background: laneColors[lane] }"></span>
@@ -318,12 +480,13 @@ function updateTooltipPos(event) {
       <svg
         ref="svgRef"
         class="radial-svg"
+        :class="{ 'draw-pending': pendingDraw }"
         :viewBox="`-70 -70 ${size + 140} ${size + 140}`"
         preserveAspectRatio="xMidYMid meet"
       >
         <!-- Center label -->
-        <text :x="cx" :y="cy - 6" text-anchor="middle" class="center-label">2006 –</text>
-        <text :x="cx" :y="cy + 20" text-anchor="middle" class="center-label">{{ currentYear }}</text>
+        <text :x="cx" :y="cy - 12" text-anchor="middle" class="center-label">2006 –</text>
+        <text :x="cx" :y="cy + 22" text-anchor="middle" class="center-label">{{ currentYear }}</text>
 
         <!-- Faint guide spiral -->
         <path
@@ -365,9 +528,20 @@ function updateTooltipPos(event) {
           fill="none"
           :stroke="seg.color"
           :stroke-width="arcWidth"
-          :stroke-opacity="hoveredEntry && hoveredEntry.title === seg.title ? 1 : 0.85"
+          :stroke-opacity="segOpacity(seg)"
           stroke-linecap="round"
           class="strand-seg"
+        />
+
+        <!-- Highlight overlay for the selected entry's exact span -->
+        <path
+          v-if="selectedSpan"
+          :d="selectedSpan.path"
+          fill="none"
+          :stroke="selectedSpan.color"
+          :stroke-width="arcWidth + 2"
+          stroke-linecap="round"
+          class="strand-highlight"
         />
 
         <!-- Markers at each entry's start year -->
@@ -376,14 +550,31 @@ function updateTooltipPos(event) {
           :key="'mk-' + m.title + activeScheme"
           :cx="m.mx"
           :cy="m.my"
-          :r="hoveredEntry && hoveredEntry.title === m.title ? 7 : 5"
+          :r="markerR(m)"
           :fill="m.color"
           stroke="var(--bg)"
           stroke-width="2"
           class="strand-marker"
+        />
+
+        <!-- Invisible enlarged hit areas: hover + tap targets for the markers -->
+        <circle
+          v-for="m in allMarkers"
+          :key="'hit-' + m.title + activeScheme"
+          :cx="m.mx"
+          :cy="m.my"
+          r="14"
+          fill="transparent"
+          class="marker-hit"
+          tabindex="0"
+          role="button"
+          :aria-label="`${m.title}, ${m.organization}, ${m.dates}`"
           @mouseenter="onArcEnter(m, $event)"
           @mousemove="onArcMove(m, $event)"
           @mouseleave="onArcLeave"
+          @click="selectEntry(m)"
+          @keydown.enter.prevent="selectEntry(m)"
+          @keydown.space.prevent="selectEntry(m)"
         />
 
         <!-- Curved labels riding along their arc -->
@@ -394,12 +585,13 @@ function updateTooltipPos(event) {
           @mouseenter="onArcEnter(c, $event)"
           @mousemove="onArcMove(c, $event)"
           @mouseleave="onArcLeave"
+          @click="selectEntry(c)"
         >
           <path :id="c.pathId" :d="c.textPath" fill="none" stroke="none" />
           <text
             class="arc-curved"
             :class="{ 'arc-label--active': hoveredEntry && hoveredEntry.title === c.title }"
-            :fill="c.color"
+            :fill="c.labelColor"
           >
             <textPath :href="'#' + c.pathId" startOffset="50%" text-anchor="middle">
               {{ c.label }}
@@ -415,6 +607,7 @@ function updateTooltipPos(event) {
           @mouseenter="onArcEnter(d, $event)"
           @mousemove="onArcMove(d, $event)"
           @mouseleave="onArcLeave"
+          @click="selectEntry(d)"
         >
           <line
             :x1="d.connX1"
@@ -432,7 +625,7 @@ function updateTooltipPos(event) {
             dominant-baseline="central"
             class="arc-label"
             :class="{ 'arc-label--active': hoveredEntry && hoveredEntry.title === d.title }"
-            :fill="d.color"
+            :fill="d.labelColor"
           >
             {{ d.label }}
           </text>
@@ -441,18 +634,53 @@ function updateTooltipPos(event) {
 
       <Transition name="tip-fade">
         <div
-          v-if="hoveredEntry"
+          v-if="hoveredEntry && !selectedEntry"
           class="radial-tooltip"
           :style="{ left: tooltipPos.x + 'px', top: (tooltipPos.y - 10) + 'px' }"
         >
-          <span class="tip-lane" :style="{ color: hoveredEntry.color }">{{ hoveredEntry.lane }}</span>
+          <span class="tip-lane" :style="{ color: hoveredEntry.labelColor }">{{ hoveredEntry.lane }}</span>
           <span class="tip-dates">{{ hoveredEntry.dates }}</span>
           <strong>{{ hoveredEntry.title }}</strong>
           <span class="tip-org">{{ hoveredEntry.organization }}</span>
           <span class="tip-summary">{{ hoveredEntry.summary }}</span>
         </div>
       </Transition>
+
+      <!-- Storytelling index card: pinned beside the spiral -->
+      <Transition name="card-pop">
+        <aside v-if="selectedEntry" class="detail-card" aria-live="polite">
+          <span
+            class="detail-pin"
+            :style="{ background: selectedEntry.color }"
+            aria-hidden="true"
+          ></span>
+          <button class="detail-close" aria-label="Close" @click="selectedEntry = null">
+            ×
+          </button>
+          <span class="detail-lane" :style="{ color: selectedEntry.labelColor }">
+            {{ selectedEntry.lane }}
+          </span>
+          <span class="detail-dates">{{ selectedEntry.dates }}</span>
+          <h3>{{ selectedEntry.title }}</h3>
+          <span class="detail-org">{{ selectedEntry.organization }}</span>
+          <p class="detail-summary">{{ selectedEntry.summary }}</p>
+          <div class="detail-nav">
+            <button :disabled="selectedIndex <= 0" @click="stepSelection(-1)">
+              ← Earlier
+            </button>
+            <span class="detail-count">{{ selectedIndex + 1 }} / {{ chronological.length }}</span>
+            <button
+              :disabled="selectedIndex >= chronological.length - 1"
+              @click="stepSelection(1)"
+            >
+              Later →
+            </button>
+          </div>
+        </aside>
+      </Transition>
     </div>
+
+    <p v-if="!hasExplored" class="tap-hint">Tap a circle to explore the journey</p>
   </div>
 </template>
 
@@ -463,29 +691,6 @@ function updateTooltipPos(event) {
   align-items: center;
   gap: 20px;
   padding: 20px 0;
-}
-
-.radial-controls {
-  display: flex;
-  gap: 8px;
-}
-
-.scheme-btn {
-  padding: 8px 18px;
-  border: 1px solid var(--line);
-  background: transparent;
-  font-family: var(--mono);
-  font-size: 12px;
-  text-transform: uppercase;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.scheme-btn.active {
-  background: var(--ink);
-  color: var(--bg);
-  border-color: var(--ink);
 }
 
 .radial-legend {
@@ -523,6 +728,13 @@ function updateTooltipPos(event) {
   height: auto;
 }
 
+/* Before the draw animation kicks in, only the guide spiral + ticks show */
+.draw-pending .strand-seg,
+.draw-pending .strand-marker,
+.draw-pending .entry-group {
+  opacity: 0;
+}
+
 .center-label {
   font-family: var(--serif);
   font-size: 22px;
@@ -538,7 +750,7 @@ function updateTooltipPos(event) {
 
 .year-label {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 10.5px;
   fill: var(--muted);
   font-weight: 600;
 }
@@ -558,13 +770,13 @@ function updateTooltipPos(event) {
 
 .arc-label {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13.5px;
   transition: font-weight 0.15s ease;
 }
 
 .arc-curved {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 600;
   letter-spacing: 0.01em;
   transition: font-weight 0.15s ease;
@@ -636,5 +848,205 @@ function updateTooltipPos(event) {
 .tip-fade-enter-from,
 .tip-fade-leave-to {
   opacity: 0;
+}
+
+.marker-hit {
+  cursor: pointer;
+  outline: none;
+}
+
+.marker-hit:focus-visible {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+/* Storytelling index card */
+.detail-card {
+  position: absolute;
+  top: 28px;
+  right: 0;
+  width: 250px;
+  padding: 20px 20px 16px;
+  background: var(--paper);
+  border: 1px solid rgba(24, 39, 36, 0.14);
+  box-shadow: 0 16px 36px rgba(24, 39, 36, 0.16);
+  transform: rotate(1.2deg);
+  z-index: 11;
+}
+
+.detail-pin {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 3px 5px rgba(24, 39, 36, 0.28);
+}
+
+.detail-pin::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.detail-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  border: none;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.detail-close:hover {
+  color: var(--ink);
+}
+
+.detail-lane {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.detail-dates {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.detail-card h3 {
+  margin: 0 0 4px;
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.detail-org {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.detail-summary {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.detail-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.detail-nav button {
+  border: none;
+  background: none;
+  padding: 4px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.detail-nav button:disabled {
+  color: var(--muted);
+  opacity: 0.4;
+  cursor: default;
+}
+
+.detail-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.card-pop-enter-active,
+.card-pop-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.card-pop-enter-from,
+.card-pop-leave-to {
+  opacity: 0;
+  transform: rotate(1.2deg) translateY(10px);
+}
+
+.tap-hint {
+  display: none;
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* --- Phone: decluttered spiral, tap to explore ------------------------------ */
+@media (max-width: 640px) {
+  /* Labels are unreadable at this scale — the index card replaces them */
+  .entry-group,
+  .arc-label,
+  .arc-curved {
+    display: none;
+  }
+
+  .year-label {
+    font-size: 19px;
+  }
+
+  .center-label {
+    font-size: 28px;
+  }
+
+  /* CSS r overrides the attribute: bigger markers + touch targets */
+  .strand-marker {
+    r: 11px;
+  }
+
+  .marker-hit {
+    r: 28px;
+  }
+
+  .tap-hint {
+    display: block;
+  }
+
+  /* The card flows below the chart instead of floating beside it */
+  .detail-card {
+    position: static;
+    width: 100%;
+    margin-top: 4px;
+    transform: rotate(0.6deg);
+  }
+
+  .card-pop-enter-from,
+  .card-pop-leave-to {
+    transform: rotate(0.6deg) translateY(10px);
+  }
 }
 </style>

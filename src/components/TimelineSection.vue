@@ -1,11 +1,27 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import timelineData from "../data/timeline.json";
 import RadialTimeline from "./RadialTimeline.vue";
 
+gsap.registerPlugin(ScrollTrigger);
+
 const sectionRef = ref(null);
+const trackRef = ref(null);
 let revealed = false;
+
+// Phone view toggle: the spiral (default) or the unrolled-strand list
+const mobileView = ref("spiral");
+let listInitialized = false;
+
+watch(mobileView, async (v) => {
+  if (v === "list" && !listInitialized) {
+    listInitialized = true;
+    await setupMobileStrand();
+    ScrollTrigger.refresh();
+  }
+});
 
 const laneColors = {
   Education: "var(--blue)",
@@ -14,8 +30,17 @@ const laneColors = {
   "Pedagogy & Community": "var(--yellow)",
 };
 
+// Yellow text is illegible on paper — lane *text* uses a darker ochre
+// while dots/strand keep the bright yellow. Mirrors RadialTimeline.
+const laneTextColors = {
+  ...laneColors,
+  "Pedagogy & Community": "#a8842c",
+};
+
+// Chronological (oldest first): the phone timeline is the spiral unrolled,
+// so it reads top-to-bottom the way the spiral reads center-outward.
 const sortedEntries = computed(() =>
-  [...timelineData.entries].sort((a, b) => b.start - a.start)
+  [...timelineData.entries].sort((a, b) => a.start - b.start)
 );
 
 function entryLane(entry) {
@@ -32,36 +57,109 @@ function reveal() {
   if (radial) {
     gsap.from(radial, { opacity: 0, y: 36, duration: 0.6, ease: "power2.out" });
   }
-  const cards = root.querySelectorAll(".tl-card");
-  if (cards.length) {
-    gsap.from(cards, {
-      opacity: 0,
-      y: 28,
-      duration: 0.45,
-      stagger: 0.06,
-      ease: "power2.out",
+}
+
+// --- Mobile strand: the spiral unrolled --------------------------------------
+// The vertical line is rebuilt as colored segments (dot-to-dot, colored by the
+// earlier entry's lane), mirroring the spiral's strand. It draws itself as the
+// user scrolls; cards settle in one by one.
+
+const strandSegs = ref([]);
+
+function computeStrand() {
+  const track = trackRef.value;
+  if (!track || track.offsetParent === null) return; // hidden on desktop
+  const dots = Array.from(track.querySelectorAll(".tl-dot"));
+  if (!dots.length) return;
+  const trackRect = track.getBoundingClientRect();
+  const centers = dots.map((d) => {
+    const r = d.getBoundingClientRect();
+    return r.top - trackRect.top + r.height / 2;
+  });
+  const entries = sortedEntries.value;
+  strandSegs.value = centers.map((top, i) => {
+    const bottom = i < centers.length - 1 ? centers[i + 1] : trackRect.height - 10;
+    return {
+      topPx: top,
+      heightPx: Math.max(0, bottom - top),
+      color: laneColors[entryLane(entries[i])] || "var(--ink)",
+    };
+  });
+}
+
+function onResize() {
+  computeStrand();
+  ScrollTrigger.refresh();
+}
+
+async function setupMobileStrand() {
+  if (typeof window === "undefined") return;
+  if (!window.matchMedia("(max-width: 640px)").matches) return;
+  await nextTick();
+  computeStrand();
+  window.addEventListener("resize", onResize);
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  await nextTick(); // segments rendered
+
+  const track = trackRef.value;
+  if (!track) return;
+  const segEls = Array.from(track.querySelectorAll(".tl-line-seg"));
+  const totalH = strandSegs.value.reduce((a, s) => a + s.heightPx, 0);
+  if (segEls.length && totalH > 0) {
+    gsap.set(segEls, { scaleY: 0, transformOrigin: "top center" });
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: track,
+        start: "top 72%",
+        end: "bottom 78%",
+        scrub: 0.4,
+      },
+    });
+    segEls.forEach((el, i) => {
+      tl.to(el, {
+        scaleY: 1,
+        duration: strandSegs.value[i].heightPx / totalH,
+        ease: "none",
+      });
     });
   }
+
+  track.querySelectorAll(".tl-card").forEach((card) => {
+    gsap.from(card, {
+      opacity: 0,
+      y: 24,
+      duration: 0.5,
+      ease: "power2.out",
+      clearProps: "transform,opacity",
+      scrollTrigger: { trigger: card, start: "top 88%" },
+    });
+  });
 }
 
 onMounted(() => {
   const root = sectionRef.value;
   if (!root || typeof IntersectionObserver === "undefined") {
     reveal();
-    return;
+  } else {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            reveal();
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(root);
   }
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          reveal();
-          observer.disconnect();
-        }
-      });
-    },
-    { threshold: 0.15 }
-  );
-  observer.observe(root);
+  // The unrolled-strand list is set up lazily, on first toggle to "List".
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", onResize);
 });
 
 // Hero / nav "Open timeline" links scroll the section into view.
@@ -84,13 +182,29 @@ defineExpose({ open });
     </div>
 
     <div class="tl-container">
-      <!-- Radial chart: desktop only -->
-      <div class="tl-radial-desktop">
+      <!-- Phone-only toggle between the spiral and the unrolled strand -->
+      <div class="tl-mobile-toggle" role="group" aria-label="Timeline view">
+        <button
+          :class="{ active: mobileView === 'spiral' }"
+          @click="mobileView = 'spiral'"
+        >
+          Spiral
+        </button>
+        <button
+          :class="{ active: mobileView === 'list' }"
+          @click="mobileView = 'list'"
+        >
+          List
+        </button>
+      </div>
+
+      <!-- Radial chart: always on desktop; on phone when "Spiral" is chosen -->
+      <div class="tl-radial-desktop" :class="{ 'tl-mobile-off': mobileView !== 'spiral' }">
         <RadialTimeline />
       </div>
 
-      <!-- Vertical timeline: mobile only -->
-      <div class="tl-vertical-mobile">
+      <!-- Unrolled strand: phone "List" view -->
+      <div class="tl-vertical-mobile" :class="{ 'tl-mobile-on': mobileView === 'list' }">
         <div class="tl-legend">
           <span
             v-for="(color, lane) in laneColors"
@@ -102,8 +216,15 @@ defineExpose({ open });
           </span>
         </div>
 
-        <div class="tl-track">
-          <div class="tl-line" aria-hidden="true"></div>
+        <div class="tl-track" ref="trackRef">
+          <div class="tl-line" aria-hidden="true">
+            <div
+              v-for="(s, i) in strandSegs"
+              :key="i"
+              class="tl-line-seg"
+              :style="{ top: s.topPx + 'px', height: s.heightPx + 'px', background: s.color }"
+            ></div>
+          </div>
 
           <article
             v-for="(entry, i) in sortedEntries"
@@ -114,7 +235,7 @@ defineExpose({ open });
             <div class="tl-card-inner">
               <div class="tl-card-header">
                 <time>{{ entry.dates }}</time>
-                <span class="tl-lane-tag" :style="{ color: laneColors[entryLane(entry)] || 'var(--ink)' }">
+                <span class="tl-lane-tag" :style="{ color: laneTextColors[entryLane(entry)] || 'var(--ink)' }">
                   {{ entryLane(entry) }}
                 </span>
               </div>
@@ -170,6 +291,31 @@ defineExpose({ open });
   display: none;
 }
 
+.tl-mobile-toggle {
+  display: none;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tl-mobile-toggle button {
+  padding: 7px 18px;
+  border: 1px solid var(--line);
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tl-mobile-toggle button.active {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
 /* Mobile vertical timeline styles */
 .tl-legend {
   display: flex;
@@ -208,7 +354,16 @@ defineExpose({ open });
   bottom: 0;
   left: 20px;
   width: 2px;
-  background: var(--line);
+  background: var(--line); /* faint guide, like the spiral's guide path */
+}
+
+/* Colored strand segments laid over the guide — the spiral, unrolled */
+.tl-line-seg {
+  position: absolute;
+  left: -1px;
+  width: 4px;
+  border-radius: 2px;
+  opacity: 0.85;
 }
 
 .tl-card {
@@ -232,11 +387,39 @@ defineExpose({ open });
 }
 
 .tl-card-inner {
+  position: relative;
   padding: 16px 20px;
   border: 1px solid var(--line);
-  background: rgba(255, 253, 248, 0.92);
-  box-shadow: 0 8px 24px rgba(24, 39, 36, 0.07);
+  background: var(--paper);
+  box-shadow: 0 8px 24px rgba(24, 39, 36, 0.09);
   transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* Notes pinned beside the strand: slight scatter + a small tape strip */
+.tl-card:nth-of-type(odd) .tl-card-inner {
+  transform: rotate(-0.5deg);
+}
+
+.tl-card:nth-of-type(even) .tl-card-inner {
+  transform: rotate(0.45deg);
+}
+
+.tl-card-inner::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 58px;
+  height: 18px;
+  background: rgba(248, 242, 226, 0.65);
+  border-left: 2px dotted rgba(24, 39, 36, 0.08);
+  border-right: 2px dotted rgba(24, 39, 36, 0.08);
+  box-shadow: 0 1px 3px rgba(24, 39, 36, 0.14);
+  transform: translateX(-50%) rotate(-2deg);
+}
+
+.tl-card:nth-of-type(even) .tl-card-inner::before {
+  transform: translateX(-50%) rotate(1.6deg);
 }
 
 .tl-card-inner:hover {
@@ -292,11 +475,15 @@ defineExpose({ open });
 }
 
 @media (max-width: 640px) {
-  .tl-radial-desktop {
+  .tl-mobile-toggle {
+    display: flex;
+  }
+
+  .tl-radial-desktop.tl-mobile-off {
     display: none;
   }
 
-  .tl-vertical-mobile {
+  .tl-vertical-mobile.tl-mobile-on {
     display: block;
   }
 
