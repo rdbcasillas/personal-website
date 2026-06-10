@@ -1,0 +1,147 @@
+{
+  "startYear": 2006,
+  "endYear": 2026.6,
+  "laneSchemes": {
+    "where": {
+      "label": "By domain",
+      "lanes": ["Education", "Research & Visualization", "Product & Industry", "Pedagogy & Community"]
+    },
+    "how": {
+      "label": "By mode of work",
+      "lanes": ["Learning", "Building", "Leading", "Teaching"]
+    }
+  },
+  "entries": [
+    {
+      "start": 2006,
+      "end": 2010,
+      "dates": "2006 – 2010",
+      "title": "B.Tech Computer Engineering",
+      "organization": "NMIMS",
+      "summary": "Computer engineering foundation.",
+      "lanes": { "where": "Education", "how": "Learning" },
+      "icon": null
+    },
+    {
+      "start": 2010.6,
+      "end": 2013.9,
+      "dates": "Aug 2010 – Nov 2013",
+      "title": "Software Engineer",
+      "organization": "Tech Mahindra",
+      "summary": "Production support and automation for AT&T systems.",
+      "lanes": { "where": "Product & Industry", "how": "Building" },
+      "icon": null
+    },
+    {
+      "start": 2014,
+      "end": 2016,
+      "dates": "2014 – 2016",
+      "title": "MS in Bioinformatics",
+      "organization": "Marquette University",
+      "summary": "Moved from software into computational biology.",
+      "lanes": { "where": "Education", "how": "Learning" },
+      "icon": null
+    },
+    {
+      "start": 2015.6,
+      "end": 2016.8,
+      "dates": "Aug 2015 – Oct 2016",
+      "title": "Research Assistant",
+      "organization": "Marquette University",
+      "summary": "SNPredict, RNA-Seq and ChIP-Seq workflow automation.",
+      "lanes": { "where": "Research & Visualization", "how": "Building" },
+      "icon": null
+    },
+    {
+      "start": 2016.8,
+      "end": 2018.25,
+      "dates": "Oct 2016 – Mar 2018",
+      "title": "Bioinformatics Support Analyst",
+      "organization": "Blood Center of Wisconsin",
+      "summary": "Clinical genomics workflows, NGS pipelines, and D3 visualization tools.",
+      "lanes": { "where": "Research & Visualization", "how": "Building" },
+      "icon": null
+    },
+    {
+      "start": 2018.25,
+      "end": 2018.58,
+      "dates": "Apr 2018 – Jul 2018",
+      "title": "Programmer Analyst",
+      "organization": "Medical College of Wisconsin",
+      "summary": "Visualization and set operations tooling for Rat Genome Database.",
+      "lanes": { "where": "Research & Visualization", "how": "Building" },
+      "icon": null
+    },
+    {
+      "start": 2018.9,
+      "end": 2021.1,
+      "dates": "Dec 2018 – Jan 2021",
+      "title": "Bioinformatician",
+      "organization": "Marquette University",
+      "label": "Marquette University",
+      "summary": "Pipelines and web tools for axon growth research.",
+      "lanes": { "where": "Research & Visualization", "how": "Building" },
+      "icon": null
+    },
+    {
+      "start": 2021.6,
+      "end": 2022.9,
+      "dates": "Aug 2021 – Nov 2022",
+      "title": "Data Scientist",
+      "organization": "Indx.Ai",
+      "summary": "Cancer mutation annotation app for oncologists.",
+      "lanes": { "where": "Product & Industry", "how": "Building" },
+      "icon": null
+    },
+    {
+      "start": 2022.9,
+      "end": 2024.15,
+      "dates": "Nov 2022 – Feb 2024",
+      "title": "Product Manager",
+      "organization": "Indx.Ai / OneCell Diagnostics",
+      "summary": "iCare platform, oncology products, and bioinformatics teams.",
+      "lanes": { "where": "Product & Industry", "how": "Leading" },
+      "icon": null
+    },
+    {
+      "start": 2024.67,
+      "end": 2026.6,
+      "dates": "Sep 2024 – Present",
+      "title": "Co-founder",
+      "organization": "Portal",
+      "summary": "Community for epistemic and personal growth.",
+      "lanes": { "where": "Pedagogy & Community", "how": "Leading" },
+      "icon": null
+    },
+    {
+      "start": 2024.84,
+      "end": 2026.6,
+      "dates": "Nov 2024 – Present",
+      "title": "Founder and Coach",
+      "organization": "Rational Resilience",
+      "summary": "Coaching for better decisions, resilience, and emotional awareness.",
+      "lanes": { "where": "Pedagogy & Community", "how": "Teaching" },
+      "icon": null
+    },
+    {
+      "start": 2025.58,
+      "end": 2026.6,
+      "dates": "Aug 2025 – Present",
+      "title": "Workshop Facilitator",
+      "organization": "EA Infrastructure Fund",
+      "summary": "Rationality workshops in Bangalore and Hyderabad.",
+      "lanes": { "where": "Pedagogy & Community", "how": "Teaching" },
+      "icon": null
+    },
+    {
+      "start": 2026.25,
+      "end": 2026.58,
+      "dates": "Apr 2026 – Jul 2026",
+      "title": "Facilitator, Futurekind Fellowship",
+      "organization": "Electric Sheep",
+      "summary": "Futurekind Fellowship cohorts and AI tools for animal welfare.",
+      "lanes": { "where": "Pedagogy & Community", "how": "Teaching" },
+      "icon": null
+    }
+  ]
+}
