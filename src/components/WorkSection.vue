@@ -143,6 +143,13 @@ const publications = [
     journal: "Biology of Blood and Marrow Transplantation",
     url: "https://pubmed.ncbi.nlm.nih.gov/30537549/",
   },
+  {
+    year: "2016",
+    title:
+      "SNPredict: a machine learning approach for detecting low frequency variants in cancer",
+    journal: "Master's thesis · Marquette University",
+    url: "https://epublications.marquette.edu/theses_open/367/",
+  },
 ];
 
 const sectionRef = ref(null);

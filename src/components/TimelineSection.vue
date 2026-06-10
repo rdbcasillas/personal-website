@@ -262,6 +262,15 @@ defineExpose({ open });
                   <li v-for="(line, j) in entry.details" :key="j">{{ line }}</li>
                 </ul>
               </template>
+              <div v-if="entry.links && entry.links.length" class="tl-links">
+                <a
+                  v-for="l in entry.links"
+                  :key="l.url"
+                  :href="l.url"
+                  target="_blank"
+                  rel="noopener"
+                >{{ l.label }} ↗</a>
+              </div>
             </div>
           </article>
         </div>
@@ -522,6 +531,26 @@ defineExpose({ open });
 
 .tl-details li::marker {
   color: var(--green);
+}
+
+.tl-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.tl-links a {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--blue);
+  text-decoration: none;
+  border-bottom: 1px dashed currentColor;
+}
+
+.tl-links a:hover {
+  color: var(--ink);
 }
 
 @media (max-width: 640px) {

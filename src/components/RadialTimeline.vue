@@ -758,6 +758,15 @@ onUnmounted(() => document.removeEventListener("click", onDocumentClick));
               <li v-for="(line, i) in selectedEntry.details" :key="i">{{ line }}</li>
             </ul>
           </template>
+          <div v-if="selectedEntry.links && selectedEntry.links.length" class="detail-links">
+            <a
+              v-for="l in selectedEntry.links"
+              :key="l.url"
+              :href="l.url"
+              target="_blank"
+              rel="noopener"
+            >{{ l.label }} ↗</a>
+          </div>
           <div class="detail-nav">
             <button :disabled="selectedIndex <= 0" @click="stepSelection(-1)">
               ← Earlier
@@ -1082,6 +1091,26 @@ onUnmounted(() => document.removeEventListener("click", onDocumentClick));
 
 .detail-list li::marker {
   color: var(--green);
+}
+
+.detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0 0 12px;
+}
+
+.detail-links a {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--blue);
+  text-decoration: none;
+  border-bottom: 1px dashed currentColor;
+}
+
+.detail-links a:hover {
+  color: var(--ink);
 }
 
 .detail-nav {

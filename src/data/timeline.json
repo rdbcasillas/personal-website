@@ -44,6 +44,15 @@
       "organization": "Marquette University",
       "shortLabel": "Marquette",
       "summary": "Moved from software into computational biology.",
+      "details": [
+        "Thesis: SNPredict — a machine learning approach for detecting low-frequency variants in cancer."
+      ],
+      "links": [
+        {
+          "label": "Read the thesis",
+          "url": "https://epublications.marquette.edu/theses_open/367/"
+        }
+      ],
       "lanes": { "where": "Education", "how": "Learning" },
       "icon": null
     },
@@ -57,6 +66,12 @@
       "details": [
         "Designed and built SNPredict, a tool that predicts rare somatic variants using machine learning (kNN, LinearSVC).",
         "Automated RNA-Seq and ChIP-Seq workflows with custom shell scripts."
+      ],
+      "links": [
+        {
+          "label": "SNPredict thesis",
+          "url": "https://epublications.marquette.edu/theses_open/367/"
+        }
       ],
       "lanes": { "where": "Research & Visualization", "how": "Building" },
       "icon": null
