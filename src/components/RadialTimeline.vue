@@ -150,6 +150,12 @@ function displayLabel(entry) {
   return orgCounts[entry.organization] > 1 ? entry.title : entry.organization;
 }
 
+// On phone, entries with a shortLabel (BCW, MCW, MU, …) use it so more arcs
+// can carry a legible label in the tight space. Desktop keeps full names.
+function chartLabel(entry) {
+  return isPhone.value && entry.shortLabel ? entry.shortLabel : displayLabel(entry);
+}
+
 // Only label years that actually start/end an entry, capped at the present (2026)
 const relevantYears = computed(() => {
   const years = new Set([2006, 2026]);
@@ -163,13 +169,20 @@ const relevantYears = computed(() => {
 function tickMark(year) {
   const angle = yearToAngle(year);
   const r = yearToRadius(year);
+  // Year text is horizontal, so on the spiral's flanks it extends sideways
+  // into the strand. Offset the anchor by the label's own half-extents so
+  // the text box always clears the arc. Font sizes match .year-label CSS.
+  const fs = isPhone.value ? 26 : 10.5;
+  const halfW = String(year).length * fs * 0.31;
+  const halfH = fs * 0.55;
+  const labelR = r + arcWidth + 6;
   return {
     x1: ptX(angle, r - arcWidth),
     y1: ptY(angle, r - arcWidth),
     x2: ptX(angle, r + arcWidth),
     y2: ptY(angle, r + arcWidth),
-    lx: ptX(angle, r + arcWidth + 12),
-    ly: ptY(angle, r + arcWidth + 12),
+    lx: ptX(angle, labelR) + Math.cos(angle) * halfW,
+    ly: ptY(angle, labelR) + Math.sin(angle) * halfH,
   };
 }
 
@@ -224,10 +237,13 @@ function arcTextPath(startY, endY) {
 // On phone the threshold uses the larger phone font, so only a few long
 // arcs keep curved labels (leader labels are hidden entirely there).
 function fitsCurved(entry) {
+  // A shortLabel is an explicit request to show this arc's label on phone;
+  // curvedLabels widens the text path if the arc itself is too short.
+  if (isPhone.value && entry.shortLabel) return true;
   const midR = yearToRadius((entry.start + entry.end) / 2) + curvedOffset;
   const arcLen = Math.abs(yearToAngle(entry.end) - yearToAngle(entry.start)) * midR;
   const fontSize = isPhone.value ? phoneCurvedFontSize : curvedFontSize;
-  const textLen = displayLabel(entry).length * fontSize * 0.6;
+  const textLen = chartLabel(entry).length * fontSize * 0.6;
   return arcLen > textLen + 12;
 }
 
@@ -235,14 +251,31 @@ function fitsCurved(entry) {
 const curvedLabels = computed(() =>
   primaryEntries.value.filter(fitsCurved).map((entry, idx) => {
     const lane = getLane(entry);
+    const label = chartLabel(entry);
+    // Text beyond the end of a textPath is clipped, so for short arcs that
+    // were forced in via shortLabel, widen the (invisible) path around the
+    // arc's midpoint until the text fits.
+    let pathStart = entry.start;
+    let pathEnd = Math.min(entry.end, endYear);
+    if (isPhone.value) {
+      const mid = (pathStart + pathEnd) / 2;
+      const midR = yearToRadius(mid) + curvedOffset;
+      const anglePerYear = angleSpan / (endYear - startYear);
+      const neededYears =
+        (label.length * phoneCurvedFontSize * 0.6 + 16) / (anglePerYear * midR);
+      if (pathEnd - pathStart < neededYears) {
+        pathStart = mid - neededYears / 2;
+        pathEnd = mid + neededYears / 2;
+      }
+    }
     return {
       ...entry,
       lane,
       color: laneColors[lane],
       labelColor: labelColors[lane],
-      label: displayLabel(entry),
+      label,
       pathId: `arc-text-${idx}-${activeScheme.value}`,
-      textPath: arcTextPath(entry.start, entry.end),
+      textPath: arcTextPath(pathStart, pathEnd),
     };
   })
 );

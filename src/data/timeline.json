@@ -38,6 +38,7 @@
       "dates": "2014 – 2016",
       "title": "MS in Bioinformatics",
       "organization": "Marquette University",
+      "shortLabel": "Marquette",
       "summary": "Moved from software into computational biology.",
       "lanes": { "where": "Education", "how": "Learning" },
       "icon": null
@@ -58,6 +59,7 @@
       "dates": "Oct 2016 – Mar 2018",
       "title": "Bioinformatics Support Analyst",
       "organization": "Blood Center of Wisconsin",
+      "shortLabel": "BCW",
       "summary": "Clinical genomics workflows, NGS pipelines, and D3 visualization tools.",
       "lanes": { "where": "Research & Visualization", "how": "Building" },
       "icon": null
@@ -68,6 +70,7 @@
       "dates": "Apr 2018 – Jul 2018",
       "title": "Programmer Analyst",
       "organization": "Medical College of Wisconsin",
+      "shortLabel": "MCW",
       "summary": "Visualization and set operations tooling for Rat Genome Database.",
       "lanes": { "where": "Research & Visualization", "how": "Building" },
       "icon": null
@@ -79,6 +82,7 @@
       "title": "Bioinformatician",
       "organization": "Marquette University",
       "label": "Marquette University",
+      "shortLabel": "MU",
       "summary": "Pipelines and web tools for axon growth research.",
       "lanes": { "where": "Research & Visualization", "how": "Building" },
       "icon": null
@@ -99,6 +103,7 @@
       "dates": "Nov 2022 – Feb 2024",
       "title": "Product Manager",
       "organization": "OneCell Diagnostics",
+      "shortLabel": "OneCell",
       "summary": "iCare platform, oncology products, and bioinformatics teams.",
       "lanes": { "where": "Product & Industry", "how": "Leading" },
       "icon": null
