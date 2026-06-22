@@ -1,8 +1,79 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import portraitUrl from "../assets/vatsal-workshop.jpeg";
 
 defineEmits(["open-timeline"]);
+
+// --- Expandable "what I mean" notes ---------------------------------------
+// Each hero phrase that needs more than a sentence opens a larger note (the
+// note "pulled off the board") with a longer plain-language explanation.
+// PLACEHOLDER copy for now — Vatsal will write the real text.
+const notes = {
+  reasoning: {
+    eyebrow: "Current question",
+    accent: "var(--green)",
+    title: "What helps people reason well, decide wisely, and grow?",
+    body: `<p><em>Placeholder — to be written.</em> The gist: I care about the
+      practical craft of good thinking — how people weigh evidence, notice their
+      own biases, make decisions under uncertainty, and keep growing instead of
+      calcifying.</p>
+      <p>What are the habits, tools, and environments that actually move someone
+      from reacting to reasoning?</p>`,
+  },
+  education: {
+    eyebrow: "Current question",
+    accent: "var(--green)",
+    title: "What is education for in a post-AGI world?",
+    body: `<p><em>Placeholder — to be written.</em> The gist: if AI can do much of
+      the cognitive labour, what is school actually <em>for</em>?</p>
+      <p>I suspect the centre of gravity shifts toward judgment, character,
+      sense-making, and learning how to learn — and that curricula need a
+      ground-up rethink rather than a patch.</p>`,
+  },
+  collaborators: {
+    eyebrow: "Looking for",
+    accent: "var(--coral)",
+    title: "The wicked problems at the heart of the meta-crisis",
+    body: `<p>By <em>meta-crisis</em> I mean the way our hardest problems —
+      institutional trust, mental health, governance, climate, AI — are tangled
+      together and feed each other, so none of them yields to a fix in
+      isolation.</p>
+      <p>Underneath them is a deeper one: our collective ability to make sense of
+      the world and coordinate hasn't kept pace with the problems we've created.
+      These are
+      <a href="https://en.wikipedia.org/wiki/Wicked_problem" target="_blank"
+      rel="noopener noreferrer">wicked problems</a> — hard to even define, with no
+      tidy solution.</p>
+      <p>I want to work with people who feel this — whatever words they use for it
+      — and who are drawn to the root patterns rather than the symptoms. Education
+      and governance are where I keep landing, but the frame matters more to me
+      than the field.</p>`,
+  },
+};
+
+const openNote = ref(null); // key into `notes`, or null
+const activeNote = computed(() => (openNote.value ? notes[openNote.value] : null));
+function openNoteFor(key) {
+  openNote.value = key;
+}
+function closeNote() {
+  openNote.value = null;
+}
+
+function onNoteKey(e) {
+  if (e.key === "Escape") closeNote();
+}
+
+watch(openNote, (v) => {
+  if (typeof document === "undefined") return;
+  if (v) {
+    document.addEventListener("keydown", onNoteKey);
+    document.body.style.overflow = "hidden";
+  } else {
+    document.removeEventListener("keydown", onNoteKey);
+    document.body.style.overflow = "";
+  }
+});
 
 // Threads are computed from the real positions of the portrait pin and each
 // artifact's pin, so they stay attached across resizes / reflows.
@@ -14,6 +85,21 @@ const coralRef = ref(null);
 
 const boardSize = ref({ w: 620, h: 620 });
 const threads = ref([]);
+
+// --- Wind sway ------------------------------------------------------------
+// Each pinned paper swings from its pin (transform-origin: top center) with a
+// faint idle breeze plus a "gust" proportional to scroll velocity. Because the
+// pivot IS the pin point, thread endpoints don't move — only the string's sag
+// reacts, so it lags the paper and reads as wind. Whisper-subtle on purpose.
+const gust = ref(0); // current wind force, roughly -1..1
+
+// Threads redrawn from base geometry with the live gust deepening the sag.
+const threadPaths = computed(() =>
+  threads.value.map((t) => {
+    const my = t.my + gust.value * 26;
+    return { ...t, d: `M${t.x1},${t.y1} Q${t.mx},${my} ${t.x2},${t.y2}` };
+  })
+);
 
 function pinPoint(el, board) {
   // Top-center of the element, nudged up to the pushpin head
@@ -46,17 +132,77 @@ function computeThreads() {
       const mx = (start[0] + end[0]) / 2;
       const my = (start[1] + end[1]) / 2 + sag;
       return {
-        d: `M${start[0]},${start[1]} Q${mx},${my} ${end[0]},${end[1]}`,
         color,
         x1: start[0],
         y1: start[1],
         x2: end[0],
         y2: end[1],
+        mx,
+        my,
       };
     });
 }
 
 let resizeObserver = null;
+
+// Per-paper sway config: base rotation (matches the CSS), an idle phase offset
+// so they don't move in lockstep, and a gust direction multiplier.
+let swayEls = [];
+let rafId = null;
+let running = false;
+let scrollVel = 0; // px/s, set on scroll, decays in the loop
+let lastY = 0;
+let lastT = 0;
+let intersectionObserver = null;
+const reduceMotion =
+  typeof matchMedia !== "undefined" &&
+  matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function onScroll() {
+  const y = window.scrollY;
+  const now = performance.now();
+  const dt = now - lastT || 16;
+  scrollVel = ((y - lastY) / dt) * 1000;
+  lastY = y;
+  lastT = now;
+}
+
+function frame(now) {
+  scrollVel *= 0.9; // decay so a flick settles instead of running on
+  const target = Math.max(-1, Math.min(1, scrollVel / 1000));
+  gust.value += (target - gust.value) * 0.12;
+
+  const t = now / 1000;
+  for (const c of swayEls) {
+    if (!c.el) continue;
+    c.hoverGust *= 0.9; // pointer disturbance settles back to rest
+    const idle = Math.sin(t * 0.9 + c.phase) * 0.9; // always-on breeze
+    const hover = Math.sin(t * 7 + c.phase) * c.hoverGust * 3.5; // fast flutter under the cursor
+    const angle = c.base + idle + gust.value * 2.4 * c.dir + hover;
+    c.el.style.transform = `rotate(${angle}deg)`;
+  }
+  rafId = requestAnimationFrame(frame);
+}
+
+// Moving the cursor across a paper disturbs it — faster movement, bigger flutter.
+function onPointerMove(c, e) {
+  const m = Math.hypot(e.movementX || 0, e.movementY || 0);
+  c.hoverGust = Math.min(1, c.hoverGust + m / 55);
+}
+
+function startSway() {
+  if (running || reduceMotion) return;
+  running = true;
+  lastY = window.scrollY;
+  lastT = performance.now();
+  rafId = requestAnimationFrame(frame);
+}
+
+function stopSway() {
+  running = false;
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+}
 
 onMounted(() => {
   computeThreads();
@@ -65,11 +211,43 @@ onMounted(() => {
     resizeObserver.observe(boardRef.value);
   }
   window.addEventListener("resize", computeThreads);
+
+  if (reduceMotion) return;
+  // base rotations mirror the scoped CSS so the JS hand-off is seamless
+  swayEls = [
+    { el: portraitRef.value, base: -4, phase: 0, dir: 0.6, hoverGust: 0 },
+    { el: greenRef.value, base: 2, phase: 1.3, dir: 1, hoverGust: 0 },
+    { el: blueRef.value, base: 1.5, phase: 2.5, dir: -0.85, hoverGust: 0 },
+    { el: coralRef.value, base: -2, phase: 3.7, dir: 0.95, hoverGust: 0 },
+  ];
+  for (const c of swayEls) {
+    if (!c.el) continue;
+    c.onMove = (e) => onPointerMove(c, e);
+    c.el.addEventListener("pointermove", c.onMove);
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  if (typeof IntersectionObserver !== "undefined" && boardRef.value) {
+    intersectionObserver = new IntersectionObserver(
+      ([entry]) => (entry.isIntersecting ? startSway() : stopSway()),
+      { threshold: 0 }
+    );
+    intersectionObserver.observe(boardRef.value);
+  } else {
+    startSway();
+  }
 });
 
 onBeforeUnmount(() => {
   resizeObserver?.disconnect();
+  intersectionObserver?.disconnect();
   window.removeEventListener("resize", computeThreads);
+  window.removeEventListener("scroll", onScroll);
+  for (const c of swayEls) c.el?.removeEventListener("pointermove", c.onMove);
+  stopSway();
+  if (typeof document !== "undefined") {
+    document.removeEventListener("keydown", onNoteKey);
+    document.body.style.overflow = "";
+  }
 });
 </script>
 
@@ -99,7 +277,7 @@ onBeforeUnmount(() => {
         :viewBox="`0 0 ${boardSize.w} ${boardSize.h}`"
         aria-hidden="true"
       >
-        <g v-for="(t, i) in threads" :key="i">
+        <g v-for="(t, i) in threadPaths" :key="i">
           <path class="thread-line" :d="t.d" :stroke="t.color" />
           <circle class="thread-dot" :cx="t.x1" :cy="t.y1" r="3.5" />
           <circle class="thread-dot" :cx="t.x2" :cy="t.y2" r="3.5" />
@@ -108,8 +286,21 @@ onBeforeUnmount(() => {
 
       <div class="artifact artifact-green" ref="greenRef">
         <span class="board-pin board-pin-green" aria-hidden="true"></span>
-        <span>Current question</span>
-        <p>What helps people reason well, decide wisely, and grow?</p>
+        <span>Current questions</span>
+        <ul class="q-list">
+          <li>
+            <button class="note-trigger" @click="openNoteFor('reasoning')">
+              <span class="q-text">What helps people reason well, decide wisely, and grow?</span>
+              <span class="note-cue note-cue-green">↡ what I mean</span>
+            </button>
+          </li>
+          <li>
+            <button class="note-trigger" @click="openNoteFor('education')">
+              <span class="q-text">What is education for in a post-AGI world, and how should we design it?</span>
+              <span class="note-cue note-cue-green">↡ what I mean</span>
+            </button>
+          </li>
+        </ul>
       </div>
 
       <div class="artifact artifact-blue" ref="blueRef">
@@ -121,9 +312,41 @@ onBeforeUnmount(() => {
       <div class="artifact artifact-coral" ref="coralRef">
         <span class="board-pin board-pin-coral" aria-hidden="true"></span>
         <span>Looking for</span>
-        <p>Collaborators working on meaningful, socially useful problems.</p>
+        <p>
+          Collaborators drawn to the meaningful, thorny
+          <a
+            href="https://en.wikipedia.org/wiki/Wicked_problem"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="wicked-link"
+            >wicked problems</a
+          >
+          at the heart of the meta-crisis.
+        </p>
+        <button class="note-trigger note-trigger-cue" @click="openNoteFor('collaborators')">
+          <span class="note-cue note-cue-coral">↡ what I mean</span>
+        </button>
       </div>
     </div>
+
+    <Teleport to="body">
+      <Transition name="note-fade">
+        <div v-if="activeNote" class="note-overlay" @click.self="closeNote">
+          <div
+            class="note-sheet"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="activeNote.title"
+          >
+            <span class="note-pin" :style="{ background: activeNote.accent }" aria-hidden="true"></span>
+            <button class="note-close" @click="closeNote" aria-label="Close note">×</button>
+            <span class="note-eyebrow" :style="{ color: activeNote.accent }">{{ activeNote.eyebrow }}</span>
+            <h3 class="note-title">{{ activeNote.title }}</h3>
+            <div class="note-body" v-html="activeNote.body"></div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </section>
 </template>
 
@@ -207,6 +430,9 @@ onBeforeUnmount(() => {
   background: #fffdf8;
   box-shadow: 0 18px 40px rgba(24, 39, 36, 0.14);
   transform: rotate(-4deg);
+  /* swings from the pushpin; JS may take over the transform for wind sway */
+  transform-origin: top center;
+  will-change: transform;
 }
 
 .portrait-pin::before {
@@ -285,6 +511,9 @@ onBeforeUnmount(() => {
   padding: 16px;
   border: 1px solid rgba(24, 39, 36, 0.14);
   box-shadow: 0 14px 30px rgba(24, 39, 36, 0.1);
+  /* each note swings from its pushpin under the wind sway */
+  transform-origin: top center;
+  will-change: transform;
 }
 
 .artifact span:not(.board-pin) {
@@ -308,8 +537,244 @@ onBeforeUnmount(() => {
 .artifact-green {
   right: 28px;
   top: 42px;
+  width: min(262px, 46%);
   background: var(--paper-alt);
   transform: rotate(2deg);
+}
+
+/* Two current questions as pinned bullets */
+.q-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.q-list li {
+  position: relative;
+  padding-left: 17px;
+}
+
+.q-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.q-text {
+  display: block;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 16.5px;
+  line-height: 1.24;
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+/* Click target for the "what I mean" notes — a bare text button */
+.note-trigger {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.note-cue {
+  display: inline-block;
+  margin-top: 5px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  opacity: 0.72;
+  transition: opacity 0.18s ease;
+}
+.note-cue-green { color: var(--green); }
+.note-cue-coral { color: var(--coral); }
+
+.note-trigger:hover .q-text {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+.note-trigger:hover .note-cue,
+.note-trigger:focus-visible .note-cue {
+  opacity: 1;
+}
+
+/* Cue-only trigger (the "Looking for" card): the sentence stays static, only
+   the "what I mean" cue is the click target. */
+.note-trigger-cue {
+  width: auto;
+  margin-top: 5px;
+}
+.note-trigger-cue .note-cue {
+  margin-top: 0;
+}
+
+.wicked-link {
+  color: var(--coral);
+  text-decoration: none;
+  border-bottom: 1.5px solid color-mix(in srgb, var(--coral) 55%, transparent);
+  padding-bottom: 0.5px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.wicked-link:hover {
+  border-bottom-color: var(--coral);
+  background: color-mix(in srgb, var(--coral) 12%, transparent);
+}
+
+/* --- "Pulled note" overlay ------------------------------------------------ */
+.note-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(24, 39, 36, 0.42);
+  backdrop-filter: blur(2px);
+}
+
+.note-sheet {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 84vh;
+  overflow-y: auto;
+  padding: 44px 46px 38px;
+  color: #3a2f1c;
+  background: linear-gradient(178deg, #fefdfb, #f6f5ef);
+  border: 1px solid rgba(70, 58, 34, 0.16);
+  box-shadow: 0 28px 64px rgba(24, 39, 36, 0.34),
+    inset 0 0 44px rgba(150, 130, 80, 0.05);
+  transform: rotate(-0.6deg);
+}
+
+.note-sheet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.3;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.26'/%3E%3C/svg%3E");
+}
+
+.note-pin {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 3px 6px rgba(24, 39, 36, 0.3);
+}
+.note-pin::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.note-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: #6b5a38;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.note-close:hover {
+  background: rgba(120, 96, 52, 0.12);
+  color: #3a2f1c;
+}
+
+.note-eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  font-family: var(--type-alt);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.note-title {
+  margin: 0 0 18px;
+  font-family: var(--serif);
+  font-size: 27px;
+  line-height: 1.12;
+  color: #2b2214;
+}
+
+.note-body {
+  font-family: var(--type);
+  font-size: 16px;
+  line-height: 1.85;
+}
+.note-body :first-child { margin-top: 0; }
+.note-body :last-child { margin-bottom: 0; }
+.note-body p { margin: 0 0 14px; }
+.note-body em { font-style: italic; color: #6b5a38; }
+.note-body a {
+  color: #c0271c;
+  text-decoration: none;
+  border-bottom: 1.5px solid rgba(192, 39, 28, 0.5);
+}
+.note-body a:hover { border-bottom-color: #c0271c; }
+
+.note-fade-enter-active,
+.note-fade-leave-active {
+  transition: opacity 0.24s ease;
+}
+.note-fade-enter-active .note-sheet,
+.note-fade-leave-active .note-sheet {
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.1), opacity 0.24s ease;
+}
+.note-fade-enter-from,
+.note-fade-leave-to {
+  opacity: 0;
+}
+.note-fade-enter-from .note-sheet,
+.note-fade-leave-to .note-sheet {
+  opacity: 0;
+  transform: rotate(-0.6deg) translateY(14px) scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-fade-enter-active,
+  .note-fade-leave-active,
+  .note-fade-enter-active .note-sheet,
+  .note-fade-leave-active .note-sheet {
+    transition: none;
+  }
 }
 
 .artifact-blue {
