@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import { useBoardReveal } from "../composables/useBoardReveal.js";
 import previewWorkshops from "../assets/previews/rationality-workshops.jpg";
 import previewResilience from "../assets/previews/rational-resilience.jpg";
@@ -108,56 +108,167 @@ const moreProjects = [
   },
 ];
 
+// Each paper is tagged with the research field(s) it spans; the helix colours
+// its base pair accordingly and the legend explains the scheme.
+const domainMeta = {
+  neuro: { label: "Neuroscience", color: "#d75f49" },
+  genomics: { label: "Genomics", color: "#0f7b66" },
+  ml: { label: "Machine Learning", color: "#2c6f93" },
+};
+const domainOrder = ["neuro", "genomics", "ml"];
+
 const publications = [
   {
     year: "2022",
     title:
       "Brain-wide analysis of the supraspinal connectome reveals anatomical correlates to functional recovery after spinal injury",
     journal: "eLife",
+    domains: ["neuro"],
     url: "https://elifesciences.org/articles/76254",
+    abstract:
+      "The supraspinal connectome is essential for normal behavior and homeostasis and consists of numerous sensory, motor, and autonomic projections from brain to spinal cord. Study of supraspinal control and its restoration after damage has focused mostly on a handful of major populations that carry motor commands, with only limited consideration of dozens more that provide autonomic or crucial motor modulation. Here, we assemble an experimental workflow to <u class='pen'>rapidly profile the entire supraspinal mesoconnectome in adult mice</u> and disseminate the output in a web-based resource. Optimized viral labeling, 3D imaging, and registration to a mouse digital neuroanatomical atlas assigned <u class='pen'>tens of thousands of supraspinal neurons to 69 identified regions</u>. We demonstrate the ability of this approach to clarify essential points of topographic mapping between spinal levels, measure population-specific sensitivity to spinal injury, and test the relationships between <u class='pen'>region-specific neuronal sparing and variability in functional recovery</u>. This work will spur progress by broadening understanding of essential but understudied supraspinal populations.",
   },
   {
     year: "2021",
     title: "Co-occupancy identifies transcription factor co-operation for axon growth",
     journal: "Nature Communications",
+    domains: ["genomics", "neuro"],
     url: "https://www.nature.com/articles/s41467-021-22828-3",
+    abstract:
+      "Transcription factors (TFs) act as powerful levers to regulate neural physiology and can be targeted to improve cellular responses to injury or disease. Because TFs often depend on cooperative activity, a major challenge is to identify and deploy optimal sets. Here we developed a bioinformatics pipeline, centered on <u class='pen'>TF co-occupancy of regulatory DNA</u>, and used it to predict factors that potentiate the effects of pro-regenerative Klf6 in vitro. High content screens of neurite outgrowth identified cooperative activity by 12 candidates, and systematic testing in a mouse model of corticospinal tract (CST) damage substantiated <u class='pen'>three novel instances of pairwise cooperation</u>. <u class='pen'>Combined Klf6 and Nr5a2 drove the strongest growth</u>, and transcriptional profiling of CST neurons identified Klf6/Nr5a2-responsive gene networks involved in macromolecule biosynthesis and DNA repair. These data identify TF combinations that promote enhanced CST growth, clarify the transcriptional correlates, and provide a bioinformatics approach to detect TF cooperation.",
   },
   {
     year: "2018",
     title:
       "Developmental chromatin restriction of pro-growth gene networks acts as an epigenetic barrier to axon regeneration in cortical neurons",
     journal: "Developmental Neurobiology",
+    domains: ["genomics", "neuro"],
     url: "https://www.biorxiv.org/content/10.1101/259408v1",
+    abstract:
+      "Axon regeneration in the central nervous system is prevented in part by a developmental decline in the intrinsic regenerative ability of maturing neurons. This loss of axon growth ability likely reflects widespread changes in gene expression, but the mechanisms that drive this shift remain unclear. Chromatin accessibility has emerged as a key regulatory mechanism in other cellular contexts, raising the possibility that chromatin structure may contribute to the age-dependent loss of regenerative potential. Here we establish an <u class='pen'>integrated bioinformatic pipeline</u> that combines analysis of developmentally dynamic gene networks with transcription factor regulation and genome-wide maps of chromatin accessibility. When applied to the developing cortex, this pipeline detected <u class='pen'>overall closure of chromatin in sub-networks of genes associated with axon growth</u>. We next analyzed mature CNS neurons that were supplied with various pro-regenerative transcription factors. Unlike prior results with SOX11 and KLF7, here we found that neither JUN nor an activated form of STAT3 promoted substantial corticospinal tract regeneration. Correspondingly, chromatin accessibility in JUN or STAT3 target genes was substantially lower than in predicted targets of SOX11 and KLF7. Finally, we used the pipeline to <u class='pen'>predict pioneer factors</u> that could potentially relieve chromatin constraints at growth-associated loci. Overall this integrated analysis substantiates the hypothesis that dynamic chromatin accessibility contributes to the developmental decline in axon growth ability and influences the efficacy of pro-regenerative interventions in the adult, while also pointing toward selected pioneer factors as high-priority candidates for future combinatorial experiments.",
   },
   {
     year: "2018",
     title:
       "KLF6 and STAT3 co-occupy regulatory DNA and functionally synergize to promote axon growth in CNS neurons",
     journal: "Scientific Reports",
+    domains: ["genomics", "neuro"],
     url: "https://www.nature.com/articles/s41598-018-31101-5",
+    abstract:
+      "The failure of axon regeneration in the CNS limits recovery from damage and disease. Members of the KLF family of transcription factors can exert both positive and negative effects on axon regeneration, but the underlying mechanisms are unclear. Here we show that <u class='pen'>forced expression of KLF6 promotes axon regeneration</u> by corticospinal tract neurons in the injured spinal cord. RNA sequencing identified 454 genes whose expression changed upon forced KLF6 expression in vitro, including sub-networks that were highly enriched for functions relevant to axon extension including cytoskeleton remodeling, lipid synthesis, and bioenergetics. In addition, promoter analysis predicted a functional interaction between KLF6 and a second transcription factor, STAT3, and genome-wide footprinting using ATAC-Seq data confirmed <u class='pen'>frequent co-occupancy</u>. Co-expression of the two factors yielded a <u class='pen'>synergistic elevation of neurite growth</u> in vitro. These data clarify the transcriptional control of axon growth and point the way toward novel interventions to promote CNS regeneration.",
   },
   {
     year: "2018",
     title:
       "Direct HLA genetic comparisons identify highly matched unrelated donor-recipient pairs with improved transplantation outcome",
     journal: "Biology of Blood and Marrow Transplantation",
+    domains: ["genomics"],
     url: "https://pubmed.ncbi.nlm.nih.gov/30537549/",
+    abstract:
+      "HLA matching by allele-level genotyping is largely based on genetic similarity between a few exons that encode the antigen recognition domain (ARD) of the HLA protein. Next-generation sequencing (NGS) can identify HLA genetic polymorphisms in non-ARD-encoding exons, introns, and untranslated regions, but the impact of these polymorphisms on hematopoietic cell transplantation (HCT) outcome is unclear. We performed NGS-based sequencing of 11 HLA loci on a well-characterized retrospective cohort of 166 unrelated donor-recipient HCT pairs. Genetic differences between HCT pairs were identified and visualized using a novel bioinformatics approach that <u class='pen'>directly compares phased full-length HLA sequences</u>. Our approach was able to correctly classify HCT pairs without known HLA allele-level mismatches and also to identify a subset of HLA allele-matched HCT pairs with very few to no genetic differences in the sequenced HLA regions. This highly HLA genetically matched unrelated HCT group shows <u class='pen'>improved overall survival and reduced acute graft-versus-host disease</u> compared with HCT pairs with HLA allele-level mismatches. These results suggest that direct genetic matching of HLA loci may offer an additional means of HCT donor selection beyond traditional HLA allele comparisons and suggests that genetic similarity as defined by HLA sequencing may have a novel role in unrelated HCT donor selection. Finally, our approach can enable larger cohort studies with adequate power to detect differences in other HCT outcomes based on genetic similarity within the HLA loci.",
   },
   {
     year: "2016",
     title:
       "SNPredict: a machine learning approach for detecting low frequency variants in cancer",
     journal: "Master's thesis · Marquette University",
+    domains: ["ml", "genomics"],
     url: "https://epublications.marquette.edu/theses_open/367/",
+    abstract:
+      "Cancer is a genetic disease caused by the accumulation of DNA variants such as single nucleotide changes or insertions/deletions in DNA. DNA variants can cause silencing of tumor suppressor genes or increase the activity of oncogenes. In order to come up with successful therapies for cancer patients, these DNA variants need to be identified accurately. DNA variants can be identified by comparing DNA sequence of tumor tissue to a non-tumor tissue by using Next Generation Sequencing (NGS) technology. But the problem of detecting variants in cancer is hard because many of these variant occurs only in a small subpopulation of the tumor tissue. It becomes a challenge to distinguish these low frequency variants from sequencing errors, which are common in today's NGS methods. Several algorithms have been made and implemented as a tool to identify such variants in cancer. However, it has been previously shown that there is low concordance in the results produced by these tools. Moreover, the number of false positives tend to significantly increase when these tools are faced with low frequency variants. This study presents <u class='pen'>SNPredict, a single nucleotide polymorphism (SNP) detection pipeline</u> that aims to utilize the results of multiple variant callers to produce a <u class='pen'>consensus output with higher accuracy</u> than any of the individual tool with the help of <u class='pen'>machine learning techniques</u>. By extracting features from the consensus output that describe traits associated with an individual variant call, it creates binary classifiers that predict a SNP's true state and therefore help in distinguishing a sequencing error from a true variant.",
   },
 ];
+
+// Pre-resolve each paper's field metadata for the template.
+const pubRows = publications.map((pub) => ({
+  ...pub,
+  fields: pub.domains.map((d) => domainMeta[d]),
+}));
+
+// --- Continuous DNA-helix backbone behind the list -------------------------
+// One SVG spans the whole list; the two backbones are sine-like strands that
+// alternate sides at each paper's measured center (so rungs sit where the
+// strands are farthest apart and the strands cross between them). Measuring the
+// real rows keeps it aligned no matter how titles wrap.
+const HELIX_COL = 76; // px width of the strand column
+const HELIX_CX = 38; // strand centre line
+const HELIX_AMP = 22; // how far each strand bows from centre
+const helixWrapRef = ref(null);
+const helix = ref({ h: 0, a: "", b: "", rungs: [] });
+
+// Which paper's abstract is open (one at a time); null = none.
+const openIndex = ref(null);
+const openPub = computed(() =>
+  openIndex.value === null ? null : pubRows[openIndex.value]
+);
+function toggleAbstract(i) {
+  openIndex.value = openIndex.value === i ? null : i;
+}
+
+function buildHelix() {
+  const wrap = helixWrapRef.value;
+  if (!wrap) return;
+  // Measure each row's HEADER (not the whole row) so a rung stays aligned to the
+  // title even when an abstract note expands below/beside it.
+  const heads = Array.from(wrap.querySelectorAll(".helix-head"));
+  if (!heads.length) return;
+  const h = wrap.offsetHeight;
+  const wrapTop = wrap.getBoundingClientRect().top;
+  const centers = heads.map((el) => {
+    const r = el.getBoundingClientRect();
+    return r.top - wrapTop + r.height / 2;
+  });
+  const cx = HELIX_CX;
+  const a = HELIX_AMP;
+  const side = (k) => (((k % 2) + 2) % 2 === 0 ? a : -a);
+  const nodes = (sign) => {
+    const pts = [{ x: cx + sign * side(-1), y: 0 }];
+    centers.forEach((y, i) => pts.push({ x: cx + sign * side(i), y }));
+    pts.push({ x: cx + sign * side(centers.length), y: h });
+    return pts;
+  };
+  const toPath = (pts) => {
+    let d = `M${pts[0].x},${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) {
+      const p = pts[i - 1];
+      const c = pts[i];
+      const my = (p.y + c.y) / 2;
+      d += ` C${p.x},${my} ${c.x},${my} ${c.x},${c.y}`;
+    }
+    return d;
+  };
+  const rungs = centers.map((y, i) => ({
+    y,
+    c0: pubRows[i].fields[0].color,
+    c1: (pubRows[i].fields[1] || pubRows[i].fields[0]).color,
+  }));
+  helix.value = { h, a: toPath(nodes(1)), b: toPath(nodes(-1)), rungs };
+}
+
+// Opening/closing an abstract can change the layout height (inline on phone),
+// so re-measure the helix afterwards.
+watch(openIndex, () => nextTick(buildHelix));
+
+let helixObserver = null;
+onMounted(() => {
+  requestAnimationFrame(buildHelix);
+  if (typeof ResizeObserver !== "undefined" && helixWrapRef.value) {
+    helixObserver = new ResizeObserver(buildHelix);
+    helixObserver.observe(helixWrapRef.value);
+  }
+  window.addEventListener("resize", buildHelix);
+});
+onBeforeUnmount(() => {
+  helixObserver?.disconnect();
+  window.removeEventListener("resize", buildHelix);
+});
 
 const sectionRef = ref(null);
 useBoardReveal(sectionRef, [
   ".building-card",
   ".polaroid, .sticky",
   ".more-card",
-  ".pub-item",
+  ".helix-row",
 ]);
 </script>
 
@@ -317,21 +428,100 @@ useBoardReveal(sectionRef, [
     </div>
 
     <p class="block-label">Publications</p>
-    <div class="pub-sheet">
-      <a
-        v-for="pub in publications"
-        :key="pub.url"
-        class="pub-item"
-        :href="pub.url"
-        target="_blank"
-        rel="noopener"
+    <p class="pub-intro">Peer-reviewed work across three fields. Each rung is a paper; its base pair is coloured by the field(s) it spans.</p>
+    <div class="helix-legend">
+      <span
+        v-for="d in domainOrder"
+        :key="d"
+        class="legend-item"
+        :style="{ '--c': domainMeta[d].color }"
       >
-        <span class="pub-year">{{ pub.year }}</span>
-        <span class="pub-body">
-          <span class="pub-title">{{ pub.title }}</span>
-          <em class="pub-journal">{{ pub.journal }}</em>
-        </span>
-      </a>
+        <span class="legend-dot" aria-hidden="true"></span>{{ domainMeta[d].label }}
+      </span>
+    </div>
+    <div class="pub-layout" :class="{ 'has-open': openIndex !== null }">
+      <div class="helix-wrap" ref="helixWrapRef">
+        <svg
+          class="helix-overlay"
+          :width="HELIX_COL"
+          :height="helix.h"
+          :viewBox="`0 0 ${HELIX_COL} ${helix.h}`"
+          aria-hidden="true"
+        >
+          <path class="strand strand-b" :d="helix.b" />
+          <path class="strand strand-a" :d="helix.a" />
+          <g v-for="(r, i) in helix.rungs" :key="i">
+            <line
+              class="rung"
+              :x1="HELIX_CX - HELIX_AMP"
+              :y1="r.y"
+              :x2="HELIX_CX"
+              :y2="r.y"
+              :style="{ stroke: r.c0 }"
+            />
+            <line
+              class="rung"
+              :x1="HELIX_CX"
+              :y1="r.y"
+              :x2="HELIX_CX + HELIX_AMP"
+              :y2="r.y"
+              :style="{ stroke: r.c1 }"
+            />
+            <circle class="node" :cx="HELIX_CX - HELIX_AMP" :cy="r.y" r="3.4" :style="{ fill: r.c0 }" />
+            <circle class="node" :cx="HELIX_CX + HELIX_AMP" :cy="r.y" r="3.4" :style="{ fill: r.c1 }" />
+          </g>
+        </svg>
+
+        <div
+          v-for="(row, i) in pubRows"
+          :key="row.url"
+          class="helix-row"
+          :class="{ open: openIndex === i }"
+        >
+          <button
+            class="helix-head"
+            :aria-expanded="openIndex === i"
+            @click="toggleAbstract(i)"
+          >
+            <span class="helix-title">{{ row.title }}</span>
+            <span class="helix-meta">
+              <em>{{ row.journal }} · {{ row.year }}</em>
+              <span class="helix-tags">
+                <span
+                  v-for="f in row.fields"
+                  :key="f.label"
+                  class="field-tag"
+                  :style="{ '--c': f.color }"
+                  >{{ f.label }}</span
+                >
+              </span>
+              <span class="helix-cue">{{ openIndex === i ? "Close −" : "Abstract +" }}</span>
+            </span>
+          </button>
+
+          <!-- Inline note: phones / narrow screens only -->
+          <div v-if="openIndex === i" class="abstract-note abstract-note--inline">
+            <span class="abstract-label">Abstract</span>
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <p class="abstract-text" v-html="row.abstract"></p>
+            <a class="abstract-read" :href="row.url" target="_blank" rel="noopener"
+              >Read the paper&nbsp;↗</a
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Sticky note: fills the right column on desktop -->
+      <aside class="pub-aside">
+        <div v-if="openPub" class="abstract-note abstract-note--aside">
+          <span class="abstract-label">Abstract · {{ openPub.journal }} · {{ openPub.year }}</span>
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <p class="abstract-text" v-html="openPub.abstract"></p>
+          <a class="abstract-read" :href="openPub.url" target="_blank" rel="noopener"
+            >Read the paper&nbsp;↗</a
+          >
+        </div>
+      </aside>
     </div>
   </section>
 </template>
@@ -831,67 +1021,309 @@ a.more-card:hover {
   line-height: 1.5;
 }
 
-/* --- Publications: a ruled sheet of papers ---------------------------------- */
-.pub-sheet {
-  max-width: 720px;
-  padding: 10px 22px;
-  background: repeating-linear-gradient(
-      180deg,
-      transparent,
-      transparent 31px,
-      rgba(44, 111, 147, 0.1) 31px,
-      rgba(44, 111, 147, 0.1) 32px
-    ),
-    var(--paper);
-  border: 1px solid rgba(24, 39, 36, 0.12);
-  box-shadow: 0 10px 26px rgba(24, 39, 36, 0.08);
-  transform: rotate(-0.25deg);
-}
-
-.pub-item {
-  display: flex;
-  gap: 16px;
-  align-items: baseline;
-  padding: 12px 0;
-  text-decoration: none;
-  border-bottom: 1px dashed rgba(24, 39, 36, 0.12);
-}
-
-.pub-item:last-child {
-  border-bottom: none;
-}
-
-.pub-year {
-  flex: 0 0 auto;
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--green);
-}
-
-.pub-body {
-  display: block;
-}
-
-.pub-title {
-  display: block;
-  font-family: var(--serif);
+/* --- Publications: a DNA double-helix of papers ----------------------------- */
+.pub-intro {
+  max-width: 600px;
+  margin: -6px 0 22px;
+  color: var(--muted);
   font-size: 15px;
-  line-height: 1.45;
+  line-height: 1.55;
+}
+
+.helix-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-bottom: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c);
+}
+
+.pub-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 680px) minmax(0, 1fr);
+  gap: 36px;
+  align-items: start;
+}
+
+.pub-aside {
+  position: relative;
+}
+
+.helix-wrap {
+  position: relative;
+  border-top: 1px solid var(--line);
+}
+
+/* The continuous helix runs the full height behind the rows */
+.helix-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.strand {
+  fill: none;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+/* Two backbone tones so the weave reads as a 3D double helix */
+.strand-a {
+  stroke: rgba(24, 39, 36, 0.5);
+}
+
+.strand-b {
+  stroke: rgba(24, 39, 36, 0.2);
+}
+
+.rung {
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.node {
+  stroke: var(--paper);
+  stroke-width: 1.2;
+}
+
+.helix-row {
+  position: relative;
+  border-bottom: 1px solid var(--line);
+  transition: opacity 0.25s ease;
+}
+
+/* When an abstract is open, the other papers recede so it stands out */
+.pub-layout.has-open .helix-row:not(.open) {
+  opacity: 0.38;
+}
+
+/* The clickable header (title + meta) */
+.helix-head {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 78px;
+  margin: 0;
+  padding: 14px 10px 14px 96px; /* leave room for the strand column */
+  border: none;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.helix-head:hover,
+.helix-row.open .helix-head {
+  background: rgba(24, 39, 36, 0.035);
+}
+
+.helix-title {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.34;
   color: var(--ink);
 }
 
-.pub-item:hover .pub-title {
+.helix-head:hover .helix-title {
   text-decoration: underline;
-  text-decoration-color: var(--green);
   text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
 }
 
-.pub-journal {
-  display: block;
-  margin-top: 2px;
-  font-size: 12.5px;
+.helix-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.helix-cue {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--muted);
+  opacity: 0.75;
+}
+
+/* --- Abstract sticky note --------------------------------------------------- */
+.abstract-note {
+  --rot: -0.7deg;
+  position: relative;
+  padding: 32px 34px 28px;
+  color: #3a2f1c;
+  /* aged rag paper kept close to snow white: faint foxing + soft edge age */
+  background:
+    radial-gradient(55% 40% at 84% 86%, rgba(120, 96, 52, 0.045), transparent 70%),
+    radial-gradient(38% 28% at 14% 20%, rgba(120, 96, 52, 0.035), transparent 70%),
+    radial-gradient(140% 130% at 50% -10%, transparent 66%, rgba(96, 78, 44, 0.07)),
+    linear-gradient(178deg, #fefdfb, #f6f5ef);
+  border: 1px solid rgba(70, 58, 34, 0.16);
+  box-shadow: 0 18px 38px rgba(24, 39, 36, 0.2),
+    inset 0 0 44px rgba(150, 130, 80, 0.05);
+  transform: rotate(var(--rot));
+  transform-origin: top left;
+  animation: noteIn 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 4;
+}
+
+/* Faint paper-fibre grain over the sheet */
+.abstract-note::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+}
+
+/* Desktop: the sheet fills the right column and follows the scroll */
+.abstract-note--aside {
+  position: sticky;
+  top: 90px;
+  width: min(100%, 460px);
+}
+
+/* Inline note is desktop-hidden; shown on narrow screens (rules below) */
+.abstract-note--inline {
+  display: none;
+}
+
+/* Typed letterhead line */
+.abstract-label {
+  position: relative;
+  display: block;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(120, 90, 40, 0.32);
+  font-family: var(--type-alt);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(74, 59, 38, 0.85);
+}
+
+/* The typed abstract body — larger, airy, sepia ink */
+.abstract-text {
+  position: relative;
+  margin: 0 0 20px;
+  font-family: var(--type);
+  font-size: 16.5px;
+  line-height: 1.95;
+  letter-spacing: 0.005em;
+  color: #3a2f1c;
+}
+
+/* Important phrases marked as if with a red pen — a slightly wavy ink stroke */
+.abstract-text u {
+  text-decoration: none;
+  padding-bottom: 2px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 6'%3E%3Cpath d='M1 4 C 5 2, 8 5.2, 12 3.6 S 19 2, 23 3.9' fill='none' stroke='%23c0271c' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E")
+    repeat-x left bottom;
+  background-size: 24px 6px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.abstract-read {
+  position: relative;
+  font-family: var(--type-alt);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7a5a22;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+.abstract-read:hover {
+  color: #3a2f1c;
+}
+
+@keyframes noteIn {
+  from {
+    opacity: 0;
+    transform: rotate(var(--rot)) translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(var(--rot)) translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .abstract-note {
+    animation: none;
+  }
+}
+
+/* Below the point where the RHS gutter runs out, drop the note inline */
+@media (max-width: 1024px) {
+  .pub-layout {
+    grid-template-columns: 1fr;
+  }
+  .pub-aside {
+    display: none;
+  }
+  .abstract-note--inline {
+    display: block;
+    width: auto;
+    max-width: 560px;
+    margin: 2px 0 18px 96px;
+    transform: rotate(-0.5deg);
+    animation: none;
+  }
+}
+
+.helix-meta em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.helix-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.field-tag {
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 32%, transparent);
 }
 
 @media (max-width: 860px) {
@@ -905,6 +1337,15 @@ a.more-card:hover {
 @media (max-width: 680px) {
   .more-grid {
     grid-template-columns: 1fr;
+  }
+
+  .helix-head {
+    padding-left: 78px;
+  }
+
+  .abstract-note--inline {
+    margin-left: 78px;
+    max-width: none;
   }
 }
 </style>

@@ -13,6 +13,8 @@
   --serif: Georgia, "Times New Roman", serif;
   --sans: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
   --mono: "SFMono-Regular", Menlo, Consolas, monospace;
+  --type: "Courier Prime", "Courier New", Courier, monospace;
+  --type-alt: "Special Elite", "Courier Prime", "Courier New", monospace;
 }
 
 * {
