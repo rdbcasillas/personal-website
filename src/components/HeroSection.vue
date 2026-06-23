@@ -265,12 +265,14 @@ onBeforeUnmount(() => {
 <template>
   <section class="hero" aria-labelledby="intro-title">
     <div class="hero-copy">
-      <p class="kicker">Software · Science · Education · Community</p>
       <h1 id="intro-title">Vatsal Mehra</h1>
-      <p class="subtitle">Builder, facilitator, community designer</p>
+      <p class="subtitle">
+        <span class="sub-grp"><span>Builder</span><span>Educator</span></span>
+        <span class="sub-grp"><span>Thinking&nbsp;coach</span><span>Community&nbsp;designer</span></span>
+      </p>
       <p class="lede">
         I build tools and spaces that help people think more clearly,
-        learn more deeply, and collaborate more honestly.
+        learn more deeply, and grow — intellectually and emotionally.
       </p>
       <div class="hero-links" aria-label="Intro links">
         <a href="#timeline" class="hero-link" @click="$emit('open-timeline')">Open timeline</a>
@@ -370,22 +372,45 @@ onBeforeUnmount(() => {
   align-items: center;
 }
 
-.kicker {
-  margin: 0 0 18px;
-  color: var(--green);
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
 .subtitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 24px;
   color: var(--muted);
   font-family: var(--mono);
   font-size: 13px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.sub-grp {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+/* "·" between the two tags inside a pair, and between the two pairs */
+.sub-grp > span:not(:first-child)::before,
+.subtitle > .sub-grp:not(:first-child)::before {
+  content: "·";
+  margin: 0 0.7em;
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* On phones, each pair drops onto its own line (a tidy 2 + 2) so the last
+   tag never wraps with an orphaned "·" leading the line. */
+@media (max-width: 640px) {
+  .subtitle {
+    font-size: 12px;
+  }
+  .subtitle > .sub-grp {
+    flex-basis: 100%;
+  }
+  .subtitle > .sub-grp:not(:first-child)::before {
+    content: none;
+  }
 }
 
 .lede {
