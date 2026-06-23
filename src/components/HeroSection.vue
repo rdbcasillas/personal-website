@@ -13,22 +13,33 @@ const notes = {
     eyebrow: "Current question",
     accent: "var(--green)",
     title: "What helps people reason well, decide wisely, and grow?",
-    body: `<p><em>Placeholder — to be written.</em> The gist: I care about the
-      practical craft of good thinking — how people weigh evidence, notice their
-      own biases, make decisions under uncertainty, and keep growing instead of
-      calcifying.</p>
-      <p>What are the habits, tools, and environments that actually move someone
-      from reacting to reasoning?</p>`,
+    body: `<p>Reasoning well, deciding wisely, and growing — intellectually
+      <em>and</em> emotionally — might be the most important things a person can
+      learn. And yet almost nothing in our education systems is actually built to
+      teach them, even though arguably this is what education should be about in
+      the first place.</p>
+      <p>I'm solving for this by running live experiments — rationality
+      workshops, life coaching, and building communities — to find the ecosystem
+      of frameworks and tools that genuinely help people make progress in these
+      directions.</p>`,
   },
   education: {
     eyebrow: "Current question",
     accent: "var(--green)",
     title: "What is education for in a post-AGI world?",
-    body: `<p><em>Placeholder — to be written.</em> The gist: if AI can do much of
-      the cognitive labour, what is school actually <em>for</em>?</p>
-      <p>I suspect the centre of gravity shifts toward judgment, character,
-      sense-making, and learning how to learn — and that curricula need a
-      ground-up rethink rather than a patch.</p>`,
+    body: `<p>Intelligence is about to get cheap. Once AI handles most knowledge
+      work — and does it better than we can — we have to ask what it actually means
+      to <em>educate</em> a human being.</p>
+      <p>Mass schooling was built to mass-produce a certain kind of worker —
+      sorting us into narrow slots, stamping out near-copies, and quietly killing
+      curiosity along the way. That maybe made some sense in an industrial economy.
+      It makes none in this one — even if we're not fully out of the old one yet.</p>
+      <p>So I think we finally have permission to start from scratch — to ask what
+      kinds of education systems we actually need, and whether schooling, which we
+      don't necessarily have to keep, should look anything like it does today. If
+      the old jobs are gone, how do people find meaning and purpose, and how do
+      humans and AI collaborate so they can reach their full potential instead of
+      being constrained by it?</p>`,
   },
   collaborators: {
     eyebrow: "Looking for",
@@ -291,13 +302,13 @@ onBeforeUnmount(() => {
           <li>
             <button class="note-trigger" @click="openNoteFor('reasoning')">
               <span class="q-text">What helps people reason well, decide wisely, and grow?</span>
-              <span class="note-cue note-cue-green">↡ what I mean</span>
+              <span class="note-cue note-cue-green">↡ read the note</span>
             </button>
           </li>
           <li>
             <button class="note-trigger" @click="openNoteFor('education')">
               <span class="q-text">What is education for in a post-AGI world, and how should we design it?</span>
-              <span class="note-cue note-cue-green">↡ what I mean</span>
+              <span class="note-cue note-cue-green">↡ read the note</span>
             </button>
           </li>
         </ul>
@@ -324,7 +335,7 @@ onBeforeUnmount(() => {
           at the heart of the meta-crisis.
         </p>
         <button class="note-trigger note-trigger-cue" @click="openNoteFor('collaborators')">
-          <span class="note-cue note-cue-coral">↡ what I mean</span>
+          <span class="note-cue note-cue-coral">↡ read the note</span>
         </button>
       </div>
     </div>
