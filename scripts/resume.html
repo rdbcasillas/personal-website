@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Vatsal Mehra — Résumé</title>
+<style>
+  :root {
+    --ink: #182724;
+    --muted: #5b6967;
+    --line: rgba(24, 39, 36, 0.18);
+    --green: #0f7b66;
+    --blue: #2c6f93;
+    --coral: #d75f49;
+    --paper: #fffdf7;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: "Helvetica Neue", "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: "SFMono-Regular", Menlo, Consolas, "Courier New", monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  @page {
+    size: Letter;
+    margin: 0;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 10.2px;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page {
+    width: 8.5in;
+    min-height: 11in;
+    padding: 0.62in 0.66in 0.5in;
+    margin: 0 auto;
+    background: var(--paper);
+  }
+
+  /* ---- Header ---------------------------------------------------------- */
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: 31px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 5px;
+    color: var(--ink);
+  }
+  .tags {
+    font-family: var(--mono);
+    font-size: 9.6px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 9px;
+  }
+  .tags .dot { color: var(--green); font-weight: 700; padding: 0 0.4em; }
+  .contact {
+    font-family: var(--mono);
+    font-size: 9.4px;
+    color: var(--muted);
+    letter-spacing: 0.01em;
+  }
+  .contact a { color: var(--ink); text-decoration: none; }
+  .contact .sep { color: var(--line); padding: 0 0.5em; }
+
+  /* ---- Two-column body ------------------------------------------------- */
+  .body {
+    display: grid;
+    grid-template-columns: 1fr 0.52fr;
+    gap: 0 26px;
+  }
+  .col-side { border-left: 1px solid var(--line); padding-left: 22px; }
+
+  /* Publications run full width below the two columns so the lower part of
+     the résumé reads as a clean band rather than a half-empty grid. */
+  .full { margin-top: 4px; }
+  .pub-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 26px;
+  }
+
+  /* ---- Section primitives --------------------------------------------- */
+  section { margin-bottom: 15px; }
+  section:last-child { margin-bottom: 0; }
+  h2 {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin: 0 0 9px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .summary { color: #2c3b38; font-size: 10.6px; line-height: 1.58; }
+
+  /* ---- Experience ------------------------------------------------------ */
+  .role { margin-bottom: 11px; page-break-inside: avoid; }
+  .role:last-child { margin-bottom: 0; }
+  .role-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .role-title {
+    font-family: var(--serif);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .role-dates {
+    font-family: var(--mono);
+    font-size: 8.8px;
+    color: var(--muted);
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+  }
+  .role-co {
+    font-size: 9.8px;
+    color: var(--green);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .role-desc { color: #36433f; margin: 2px 0 0; }
+  ul.bullets { margin: 4px 0 0; padding-left: 14px; }
+  ul.bullets li { margin-bottom: 1.5px; color: #36433f; }
+
+  /* ---- Sidebar blocks -------------------------------------------------- */
+  .skill-grp { margin-bottom: 9px; }
+  .skill-grp .label {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 9.6px;
+    margin-bottom: 2px;
+  }
+  .skill-grp .items { color: var(--muted); font-size: 9.5px; line-height: 1.45; }
+
+  .edu { margin-bottom: 9px; }
+  .edu .degree { font-family: var(--serif); font-weight: 700; font-size: 10.6px; }
+  .edu .school { color: var(--green); font-size: 9.6px; font-weight: 600; }
+  .edu .dates { font-family: var(--mono); font-size: 8.6px; color: var(--muted); }
+
+  .item { margin-bottom: 8px; }
+  .item .t { font-weight: 700; color: var(--ink); font-size: 9.8px; }
+  .item .m { color: var(--muted); font-size: 9.3px; }
+  .item .d { font-family: var(--mono); font-size: 8.4px; color: var(--green); }
+
+  /* ---- Publications ---------------------------------------------------- */
+  .pub { margin-bottom: 6px; page-break-inside: avoid; }
+  .pub .pt { color: var(--ink); font-size: 9.8px; line-height: 1.4; }
+  .pub .pm {
+    font-family: var(--mono);
+    font-size: 8.4px;
+    color: var(--muted);
+  }
+  .pub .pm .yr { color: var(--green); font-weight: 700; }
+  .pub .pm .jr { font-style: italic; }
+
+  a { color: inherit; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Vatsal Mehra</h1>
+    <div class="tags">
+      Builder<span class="dot">·</span>Educator<span class="dot">·</span>Thinking&nbsp;coach<span class="dot">·</span>Community&nbsp;designer
+    </div>
+    <div class="contact">
+      Hyderabad, India
+      <span class="sep">·</span>
+      <a href="mailto:mehra.vatsal@gmail.com">mehra.vatsal@gmail.com</a>
+      <span class="sep">·</span>
+      <a href="https://vatsalmehra.com">vatsalmehra.com</a>
+      <span class="sep">·</span>
+      <a href="https://github.com/rdbcasillas">github.com/rdbcasillas</a>
+    </div>
+  </header>
+
+  <div class="body">
+    <!-- ================= MAIN COLUMN ================= -->
+    <div class="col-main">
+      <section>
+        <h2>Summary</h2>
+        <p class="summary">
+          Builder, educator, and thinking coach with over a decade in software and
+          bioinformatics. I spent years building tools for biomedical research, then
+          shifted toward the craft of good thinking — designing and facilitating
+          rationality workshops, coaching people through better decisions and
+          resilience, and building communities for epistemic and personal growth.
+          Drawn to work that pairs technical problem-solving with a real
+          understanding of human behavior.
+        </p>
+      </section>
+
+      <section>
+        <h2>Experience</h2>
+
+        <div class="role">
+          <div class="role-head">
+            <span class="role-title">Facilitator, Futurekind Fellowship</span>
+            <span class="role-dates">Apr 2026 – Jul 2026</span>
+          </div>
+          <div class="role-co">Electric Sheep</div>
+          <p class="role-desc">
+            Facilitating two Futurekind Fellowship cohorts and, on the Builder Track,
+            helping build AI tools for animal welfare.
+          </p>
+        </div>
+
+        <div class="role">
+          <div class="role-head">
+            <span class="role-title">Workshop Designer &amp; Facilitator</span>
+            <span class="role-dates">Aug 2025 – Present</span>
+          </div>
+          <div class="role-co">EA Infrastructure Fund &amp; Effective Ventures</div>
+          <p class="role-desc">
+            Running 12 hands-on workshops across Bangalore &amp; Hyderabad that help
+            people think more clearly, make better decisions, and catch their own
+            biases.
+          </p>
+        </div>
+
+        <div class="role">
+          <div class="role-head">
+            <span class="role-title">Founder &amp; Coach</span>
+            <span class="role-dates">Nov 2024 – Present</span>
+          </div>
+          <div class="role-co">Rational Resilience</div>
+          <p class="role-desc">
+            Built and lead a coaching practice that helps clients make better
+            decisions and build resilience by blending practical problem-solving with
+            emotional awareness.
+          </p>
+        </div>
+
+        <div class="role">
+          <div class="role-head">
+            <span class="role-title">Co-founder</span>
+            <span class="role-dates">Sep 2024 – Present</span>
+          </div>
+          <div class="role-co">Portal (MetaRationality LLP)</div>
+          <p class="role-desc">
+            Building a community space for epistemic &amp; emotional growth that
+            inspires impactful work on local &amp; global catastrophic risks.
+          </p>
+        </div>
+
+        <div class="role">
+          <div class="role-head">
+            <span class="role-title">Product Manager</span>
+            <span class="role-dates">Nov 2022 – Feb 2024</span>
+          </div>
+          <div class="role-co">Indx.Ai / OneCell Diagnostics</div>
+          <p class="role-desc">
+            Built and managed the iCare platform, enabling oncologists to read
+            patients' mutational profiles and suggest appropriate cancer therapies.
+          </p>
+          <ul class="bullets">
+            <li>Translated stakeholder requirements into interfaces and bioinformatics pipelines.</li>
+            <li>Led a team of developers and bioinformaticians across iCare projects.</li>
+            <li>Designed flagship products OncoDx and OncoPredikt, and owned deployment across the SDLC.</li>
+          </ul>
+        </div>
+
+        <div class="role">
+          <div class="role-head">
+            <span class="role-title">Data Scientist</span>
+            <span class="role-dates">Aug 2021 – Nov 2022</span>
+          </div>
+          <div class="role-co">Indx.Ai</div>
+          <p class="role-desc">
+            Built a web app from scratch that identifies and annotates rare cancer
+            mutations, giving oncologists an interactive interface to track patients
+            and find treatments.
+          </p>
+        </div>
+
+        <div class="role">
+          <div class="role-head">
+            <span class="role-title">Bioinformatician</span>
+            <span class="role-dates">Dec 2018 – Jan 2021</span>
+          </div>
+          <div class="role-co">Marquette University</div>
+          <p class="role-desc">
+            Solo developer for a lab studying spinal-cord-injury recovery; built
+            pipelines and web tools revealing genetic and epigenetic regulation of
+            axon growth.
+          </p>
+          <ul class="bullets">
+            <li>Pipelines that discovered novel transcription-factor combinations regulating axon growth.</li>
+            <li>Web tools to visualize ATAC-Seq, RNA-Seq &amp; ChIP-Seq across developmental time points, and to map supraspinal neurons by spinal projection.</li>
+          </ul>
+        </div>
+
+        <div class="role">
+          <div class="role-head">
+            <span class="role-title">Programmer Analyst</span>
+            <span class="role-dates">Apr 2018 – Jul 2018</span>
+          </div>
+          <div class="role-co">Medical College of Wisconsin</div>
+          <p class="role-desc">
+            Built a tool for the Rat Genome Database to visualize and perform set
+            operations on gene lists.
+          </p>
+        </div>
+
+        <div class="role">
+          <div class="role-head">
+            <span class="role-title">Bioinformatics Support Analyst</span>
+            <span class="role-dates">Oct 2016 – Mar 2018</span>
+          </div>
+          <div class="role-co">Blood Center of Wisconsin</div>
+          <p class="role-desc">
+            Built Flask web tools automating the Molecular Diagnostics Lab workflow;
+            monitored clinical-genomics NGS, built variant calling/annotation
+            pipelines, and shipped d3.js tools (incl. VIRAS) for analyzing patient
+            reports.
+          </p>
+        </div>
+
+        <div class="role">
+          <div class="role-head">
+            <span class="role-title">Research Assistant</span>
+            <span class="role-dates">Aug 2015 – Oct 2016</span>
+          </div>
+          <div class="role-co">Marquette University</div>
+          <p class="role-desc">
+            Built SNPredict, a machine-learning tool (kNN, LinearSVC) that predicts
+            rare somatic variants, and automated RNA-Seq / ChIP-Seq workflows.
+          </p>
+        </div>
+
+        <div class="role">
+          <div class="role-head">
+            <span class="role-title">Software Engineer</span>
+            <span class="role-dates">Aug 2010 – Nov 2013</span>
+          </div>
+          <div class="role-co">Tech Mahindra</div>
+          <p class="role-desc">
+            Led production support; designed and maintained Bash automation for
+            monitoring and updating AT&amp;T servers.
+          </p>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ================= SIDEBAR ================= -->
+    <div class="col-side">
+      <section>
+        <h2>Skills</h2>
+        <div class="skill-grp">
+          <div class="label">Full Stack</div>
+          <div class="items">JavaScript / Vue.js, Python / Flask, Node.js / Express, MySQL · Redis · MongoDB, Docker / Kubernetes, REST / GraphQL, R, Git, Nginx</div>
+        </div>
+        <div class="skill-grp">
+          <div class="label">Visualization</div>
+          <div class="items">d3.js · Observable · Vega, Plotly / ggplot, Three.js</div>
+        </div>
+        <div class="skill-grp">
+          <div class="label">Bioinformatics / ML</div>
+          <div class="items">NGS pipelines (DNA-, RNA-, ATAC-Seq), Biopython, Bioconductor, scikit-learn</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Education</h2>
+        <div class="edu">
+          <div class="degree">MS, Bioinformatics</div>
+          <div class="school">Marquette University</div>
+          <div class="dates">2014 – 2016</div>
+        </div>
+        <div class="edu">
+          <div class="degree">B.Tech, Computer Engineering</div>
+          <div class="school">NMIMS</div>
+          <div class="dates">2006 – 2010</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Talks &amp; Workshops</h2>
+        <div class="item">
+          <div class="t">Planning Fallacy: Why We Underestimate Time</div>
+          <div class="m">EAGX Delhi — Talk &amp; Workshop</div>
+          <div class="d">Dec 2025</div>
+        </div>
+        <div class="item">
+          <div class="t">Calibration &amp; Cognitive Biases Workshop</div>
+          <div class="m">EAGX Bangalore — building calibration with confidence intervals</div>
+          <div class="d">Oct 2024</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Selected Projects</h2>
+        <div class="item">
+          <div class="t">Rationality Workshops</div>
+          <div class="m">Hands-on workshops on thinking &amp; decision-making</div>
+        </div>
+        <div class="item">
+          <div class="t">Teach Me A Bias</div>
+          <div class="m">Learn cognitive biases and how to overcome them</div>
+        </div>
+        <div class="item">
+          <div class="t">Mouse Brain Development DB</div>
+          <div class="m">Interactive visualizations of time-series NGS data</div>
+        </div>
+        <div class="item">
+          <div class="t">Cerebral Podcast</div>
+          <div class="m">Conversations on human biases and better thinking</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ================= PUBLICATIONS (full width) ================= -->
+  <section class="full">
+    <h2>Selected Publications</h2>
+    <div class="pub-grid">
+      <div class="pub">
+        <div class="pt">Brain-wide analysis of the supraspinal connectome reveals anatomical correlates to functional recovery after spinal injury</div>
+        <div class="pm"><span class="yr">2022</span> · <span class="jr">eLife</span></div>
+      </div>
+      <div class="pub">
+        <div class="pt">Co-occupancy identifies transcription factor co-operation for axon growth</div>
+        <div class="pm"><span class="yr">2021</span> · <span class="jr">Nature Communications</span></div>
+      </div>
+      <div class="pub">
+        <div class="pt">Developmental chromatin restriction of pro-growth gene networks acts as an epigenetic barrier to axon regeneration in cortical neurons</div>
+        <div class="pm"><span class="yr">2018</span> · <span class="jr">Developmental Neurobiology</span></div>
+      </div>
+      <div class="pub">
+        <div class="pt">KLF6 and STAT3 co-occupy regulatory DNA and functionally synergize to promote axon growth in CNS neurons</div>
+        <div class="pm"><span class="yr">2018</span> · <span class="jr">Scientific Reports</span></div>
+      </div>
+      <div class="pub">
+        <div class="pt">Direct HLA Genetic Comparisons Identify Highly Matched Unrelated Donor–Recipient Pairs with Improved Transplantation Outcome</div>
+        <div class="pm"><span class="yr">2018</span> · <span class="jr">Biology of Blood and Marrow Transplantation</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

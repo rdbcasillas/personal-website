@@ -191,6 +191,17 @@ defineExpose({ open });
         bioinformatics to building communities, with each color marking a different
         kind of work.
       </p>
+      <a
+        class="resume-link"
+        href="/Vatsal-Mehra-Resume.pdf"
+        target="_blank"
+        rel="noopener"
+        download
+      >
+        <span class="resume-icon" aria-hidden="true">↓</span>
+        Download résumé
+        <span class="resume-meta">PDF</span>
+      </a>
     </div>
 
     <div class="tl-container">
@@ -302,6 +313,51 @@ defineExpose({ open });
   font-size: 12px;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+.resume-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 20px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.resume-link:hover {
+  border-color: var(--green);
+  background: var(--paper-alt);
+  transform: translateY(-1px);
+}
+
+.resume-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--green);
+  color: var(--paper);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.resume-meta {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
 }
 
 .tl-container {

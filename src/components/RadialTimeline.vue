@@ -203,8 +203,12 @@ const onPhoneChange = (e) => (isPhone.value = e.matches);
 
 // Desktop keeps wide margins for leader-line labels; the phone has none of
 // those, so crop the viewBox tight around the spiral to render it larger.
+// The spiral + its leader-line labels are wider than they are tall, so a
+// square viewBox leaves a tall band of dead space above and below. Keep the
+// full horizontal range (labels stick out sideways) but crop the height to
+// wrap the actual drawn content (~y 10 → 745 in user units).
 const chartViewBox = computed(() =>
-  isPhone.value ? "25 25 770 770" : `-70 -70 ${size + 140} ${size + 140}`
+  isPhone.value ? "25 25 770 770" : `-70 5 ${size + 140} 740`
 );
 const curvedOffset = arcWidth / 2 + 10; // radial distance of curved text from strand center
 
