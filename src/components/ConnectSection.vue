@@ -11,12 +11,6 @@ const channels = [
     pin: "coral",
   },
   {
-    label: "Telegram",
-    value: "@zerotimer",
-    url: "https://t.me/zerotimer",
-    pin: "blue",
-  },
-  {
     label: "Signal",
     value: "Message me",
     url: "https://signal.me/#eu/LcnHg1Pc4iibfEwutJo9u3ZiBCZC0Kng9bGGHkWj6p9eVepYygBI7o8yL0q2i53D",

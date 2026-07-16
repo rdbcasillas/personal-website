@@ -7,6 +7,8 @@ import previewPortal from "../assets/previews/portal.jpg";
 import previewSubstack from "../assets/previews/clear-and-muddy.jpg";
 import shotMouseBrainDev from "../assets/previews/mousebraindev.jpg";
 import shot3dBrain from "../assets/previews/3dbrain.jpg";
+import previewAlgoma from "../assets/previews/tool-algoma.jpg";
+import previewCadence from "../assets/previews/tool-cadence.jpg";
 
 // Flagship, currently-active projects. Each shows a live snapshot of the site.
 const building = [
@@ -32,6 +34,69 @@ const building = [
     url: "https://enterportal.org",
     preview: previewPortal,
     tagline: "A community for epistemic and personal growth.",
+  },
+];
+
+// Little tools: everyday analog objects rebuilt as software, all live in use.
+// Red X sits behind a login, so its preview is a faithful little SVG of the
+// "don't break the chain" calendar instead of a screenshot.
+const redXArt = (() => {
+  const GX0 = 12, GY0 = 50, CW = 44, CH = 38, COLS = 7, ROWS = 4;
+  const W = GX0 * 2 + COLS * CW;
+  const H = GY0 + ROWS * CH + 14;
+  const marks = new Set([10, 11, 12, 13, 14, 15]);
+  let grid = "";
+  for (let r = 0; r <= ROWS; r++) {
+    const y = GY0 + r * CH;
+    grid += `<line x1="${GX0}" y1="${y}" x2="${GX0 + COLS * CW}" y2="${y}" stroke="rgba(24,39,36,0.13)" stroke-width="1"/>`;
+  }
+  for (let c = 0; c <= COLS; c++) {
+    const x = GX0 + c * CW;
+    grid += `<line x1="${x}" y1="${GY0}" x2="${x}" y2="${GY0 + ROWS * CH}" stroke="rgba(24,39,36,0.13)" stroke-width="1"/>`;
+  }
+  let cells = "", xs = "";
+  for (let i = 0; i < COLS * ROWS; i++) {
+    const n = i + 1;
+    const c = i % COLS, r = (i - c) / COLS;
+    const x = GX0 + c * CW, y = GY0 + r * CH;
+    cells += `<text x="${x + 7}" y="${y + 15}" font-family="SFMono-Regular,Menlo,monospace" font-size="11" fill="rgba(24,39,36,0.5)">${n}</text>`;
+    if (marks.has(n)) {
+      const cx = x + CW / 2, cy = y + CH / 2 + 1;
+      xs += `<path d="M${cx - 12},${cy - 9} Q${cx},${cy - 2} ${cx + 12},${cy + 9}" fill="none" stroke="#c0271c" stroke-width="3.2" stroke-linecap="round"/>`
+         +  `<path d="M${cx + 12},${cy - 9} Q${cx},${cy + 2} ${cx - 12},${cy + 9}" fill="none" stroke="#c0271c" stroke-width="3.2" stroke-linecap="round"/>`;
+    }
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style="display:block" xmlns="http://www.w3.org/2000/svg">`
+    + `<rect x="0" y="0" width="${W}" height="${H}" fill="#fbf4e4"/>`
+    + `<text x="${GX0 + 2}" y="30" font-family="Georgia,serif" font-size="20" fill="#3a2f1c">July</text>`
+    + `<text x="${W - 12}" y="30" text-anchor="end" font-family="SFMono-Regular,Menlo,monospace" font-size="11" fill="#8a7c6e">current 6 · best 7</text>`
+    + grid + cells + xs + `</svg>`;
+})();
+
+const tools = [
+  {
+    name: "Algoma Library",
+    eyebrow: "My home bookshelf, in 3D",
+    url: "https://algomalibrary.netlify.app",
+    preview: previewAlgoma,
+    tagline:
+      "A walk-through of my actual library — drift between shelves, pull any of 647 volumes, and read what's on it.",
+  },
+  {
+    name: "Cadence",
+    eyebrow: "The co-working ritual",
+    url: "https://pomocoworking.netlify.app",
+    preview: previewCadence,
+    tagline:
+      "A shared Pomodoro room. Pick one thing, go heads-down for 50 minutes alongside others, then compare notes on the break.",
+  },
+  {
+    name: "Red X",
+    eyebrow: "The wall calendar, online",
+    url: "https://calstreak.netlify.app",
+    art: redXArt,
+    tagline:
+      "Don't break the chain. Cross off each day you show up and watch the streak grow.",
   },
 ];
 
@@ -266,6 +331,7 @@ onBeforeUnmount(() => {
 const sectionRef = ref(null);
 useBoardReveal(sectionRef, [
   ".building-card",
+  ".tool-card",
   ".polaroid, .sticky",
   ".more-card",
   ".helix-row",
@@ -279,8 +345,8 @@ useBoardReveal(sectionRef, [
       <h2>Things I'm building, writing, and exploring.</h2>
     </div>
 
-    <!-- Currently building -->
-    <p class="block-label">Currently building</p>
+    <!-- Tending: ongoing practices -->
+    <p class="block-label">Tending</p>
     <div class="building-grid">
       <a
         v-for="p in building"
@@ -299,6 +365,45 @@ useBoardReveal(sectionRef, [
             <span class="status">{{ p.status }}</span>
           </span>
           <p>{{ p.tagline }}</p>
+          <span class="visit">Visit&nbsp;↗</span>
+        </span>
+      </a>
+    </div>
+
+    <!-- Little tools -->
+    <p class="block-label">Little tools</p>
+    <p class="tools-intro">
+      Small things I built for my own life — each an everyday analog object
+      rebuilt as software. All live; take one for a spin.
+    </p>
+    <div class="tools-grid">
+      <a
+        v-for="t in tools"
+        :key="t.name"
+        class="tool-card"
+        :href="t.url"
+        target="_blank"
+        rel="noopener"
+      >
+        <span class="preview">
+          <img
+            v-if="t.preview"
+            :src="t.preview"
+            :alt="`${t.name} preview`"
+            loading="lazy"
+          />
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <span v-else class="tool-art" aria-hidden="true" v-html="t.art"></span>
+        </span>
+        <span class="tool-body">
+          <span class="tool-eyebrow">{{ t.eyebrow }}</span>
+          <span class="tool-head">
+            <h3>{{ t.name }}</h3>
+            <span class="live">
+              <span class="live-dot" aria-hidden="true"></span>Live
+            </span>
+          </span>
+          <p>{{ t.tagline }}</p>
           <span class="visit">Visit&nbsp;↗</span>
         </span>
       </a>
@@ -671,6 +776,119 @@ h3 {
   color: var(--ink);
   border-bottom: 1px solid currentColor;
   align-self: flex-start;
+}
+
+/* Little tools — siblings of the building cards, flagged live not taped */
+.tools-intro {
+  max-width: 600px;
+  margin: -6px 0 22px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 18px;
+}
+
+.tool-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  background: rgba(255, 253, 248, 0.7);
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Same hand-placed scatter as the building cards, gentler angles */
+.tool-card:nth-child(3n + 1) { transform: rotate(-0.5deg); }
+.tool-card:nth-child(3n + 2) { transform: rotate(0.4deg); }
+.tool-card:nth-child(3n) { transform: rotate(-0.25deg); }
+
+.tool-card:hover {
+  transform: rotate(0deg) translateY(-4px);
+  box-shadow: 0 16px 36px rgba(24, 39, 36, 0.14);
+}
+
+.tool-card:hover .preview img {
+  transform: scale(1.04);
+}
+
+.tool-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.tool-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px 20px;
+  flex-grow: 1;
+}
+
+.tool-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+.tool-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.live {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(215, 95, 73, 0.12);
+  color: var(--coral);
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--coral);
+  animation: livePulse 2.2s ease-out infinite;
+}
+
+@keyframes livePulse {
+  0% { box-shadow: 0 0 0 0 rgba(215, 95, 73, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(215, 95, 73, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(215, 95, 73, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot { animation: none; }
+}
+
+.tool-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.tool-card .visit {
+  margin-top: 4px;
 }
 
 /* Writing & talks corkboard */
