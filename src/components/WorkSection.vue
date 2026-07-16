@@ -902,7 +902,7 @@ h3 {
   background:
     linear-gradient(90deg, rgba(24, 39, 36, 0.045) 1px, transparent 1px),
     linear-gradient(180deg, rgba(24, 39, 36, 0.045) 1px, transparent 1px),
-    rgba(255, 250, 240, 0.5);
+    rgba(255, 250, 240, 0.94);
   background-size: 26px 26px;
   box-shadow: inset 0 0 60px rgba(24, 39, 36, 0.05);
 }

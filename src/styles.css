@@ -30,8 +30,8 @@ body {
   color: var(--ink);
   font-family: var(--sans);
   background:
-    linear-gradient(90deg, rgba(44, 111, 147, 0.08) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(15, 123, 102, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(24, 39, 36, 0.05) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(24, 39, 36, 0.05) 1px, transparent 1px),
     linear-gradient(135deg, #f7f3e8 0%, #edf3ef 46%, #f6efea 100%);
   background-size: 34px 34px, 34px 34px, auto;
 }
