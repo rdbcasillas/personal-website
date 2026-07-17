@@ -30,8 +30,9 @@ const lineage = [
     img: imgDawkins,
     cover: true,
     pos: "top",
+    url: "https://en.wikipedia.org/wiki/The_Selfish_Gene",
     note:
-      "The Selfish Gene and his science videos hooked me on evolution and genomics for the first time — mid-way through a CS degree I didn't much like. They convinced me I wanted to be an evolutionary biologist.",
+      "The Selfish Gene and his science videos hooked me on evolution and genomics for the first time — mid-way through a CS degree I didn't much like. I was convinced I wanted to be an evolutionary biologist.",
     trace: "The Selfish Gene",
   },
   {
@@ -40,8 +41,9 @@ const lineage = [
     accent: "blue",
     img: imgSapolsky,
     pos: "center",
+    url: "https://www.youtube.com/watch?v=NNnIGh9g6fA",
     note:
-      "His Human Behavioral Biology lectures were so funny and alive that they tied every branch of biology together and made me excited about all of it — and a little indignant that none of this is taught in school.",
+      "His Human Behavioral Biology lectures were so funny and alive that they tied every branch of biology together and made me excited about all of it. I couldn't believe we don't teach any of this in school.",
     trace: "Human Behavioral Biology · Stanford",
   },
   {
@@ -50,8 +52,9 @@ const lineage = [
     accent: "yellow",
     img: imgBret,
     pos: "70% center",
+    url: "https://www.youtube.com/watch?v=EGqwXt90ZqA",
     note:
-      "“Inventing on Principle” gave me an inspiring way to think about a career and about building things at all. His other work — on humane interface design — pushed me toward doing education better: explorable explanations, people like Mike Bostock and Nicky Case, and making ideas genuinely understandable.",
+      "“Inventing on Principle” gave me an inspiring way to think about a career and about building things at all. His work on humane interface design pushed me toward doing education better — toward making hard ideas genuinely understandable. That thread led me on to explorable explanations and people like Mike Bostock and Nicky Case.",
     trace: "“Inventing on Principle”",
   },
   {
@@ -60,6 +63,7 @@ const lineage = [
     accent: "blue",
     img: imgGwern,
     emblem: true,
+    url: "https://gwern.net/",
     note:
       "In my 20s I was transfixed by his website — the obsessive attention to detail, the dense web of hyperlinks, the sheer range of things he was curious about. I'd even read his public notebook just to watch the latest notes appear. He made deep, self-directed inquiry look like a craft.",
     trace: "gwern.net",
@@ -70,6 +74,7 @@ const lineage = [
     accent: "green",
     img: imgLesswrong,
     emblem: true,
+    url: "https://www.lesswrong.com/",
     note:
       "LessWrong — and the many writers there — showed me that thinking about thinking could be genuinely enjoyable. I hadn't known rationality was something you could practice and get better at. A lot of how I reason traces back to that community.",
     trace: "lesswrong.com",
@@ -80,6 +85,7 @@ const lineage = [
     accent: "coral",
     img: imgSchmach,
     pos: "40% center",
+    url: "https://www.youtube.com/watch?v=4kBoLVvoqVY",
     note:
       "Gave me the language of the metacrisis. His conversations reshaped how I see the world: that our problems are deeply interconnected, and that the real leverage sits in the underlying generator functions.",
     trace: "An introduction to the Metacrisis",
@@ -104,11 +110,16 @@ useBoardReveal(sectionRef, [".person-card"]);
     </div>
 
     <div class="lineage-grid" aria-label="People who shaped how I think">
-      <article
+      <component
+        :is="d.url ? 'a' : 'article'"
         v-for="d in lineage"
         :key="d.name"
         class="person-card"
+        :class="{ 'is-link': d.url }"
         :style="{ '--c': `var(--${d.accent})` }"
+        :href="d.url || null"
+        :target="d.url ? '_blank' : null"
+        :rel="d.url ? 'noopener' : null"
       >
         <span
           class="portrait"
@@ -128,9 +139,9 @@ useBoardReveal(sectionRef, [".person-card"]);
           <span class="field-eyebrow">{{ d.field }}</span>
           <h3 class="person-name">{{ d.name }}</h3>
           <p class="person-note">{{ d.note }}</p>
-          <span v-if="d.trace" class="person-trace">↳ {{ d.trace }}</span>
+          <span v-if="d.trace" class="person-trace">↳ {{ d.trace }}{{ d.url ? " ↗" : "" }}</span>
         </div>
-      </article>
+      </component>
     </div>
   </section>
 </template>
@@ -187,17 +198,25 @@ useBoardReveal(sectionRef, [".person-card"]);
     var(--paper);
   border: 1px solid rgba(24, 39, 36, 0.13);
   box-shadow: 0 10px 24px rgba(24, 39, 36, 0.09);
+  color: var(--ink);
+  text-decoration: none;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* Slight hand-filed scatter; cards straighten on hover */
+/* Slight hand-filed scatter; link cards straighten on hover */
 .person-card:nth-child(3n + 1) { transform: rotate(-0.5deg); }
 .person-card:nth-child(3n + 2) { transform: rotate(0.4deg); }
 .person-card:nth-child(3n) { transform: rotate(-0.25deg); }
 
-.person-card:hover {
+.person-card.is-link:hover {
   transform: rotate(0deg) translateY(-4px);
   box-shadow: 0 18px 38px rgba(24, 39, 36, 0.15);
+}
+
+.person-card.is-link:hover .person-name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
 }
 
 /* Framed portrait / source image */
@@ -217,7 +236,7 @@ useBoardReveal(sectionRef, [".person-card"]);
   transition: transform 0.4s ease;
 }
 
-.person-card:hover .portrait img {
+.person-card.is-link:hover .portrait img {
   transform: scale(1.03);
 }
 
@@ -238,7 +257,7 @@ useBoardReveal(sectionRef, [".person-card"]);
   box-shadow: 0 8px 20px rgba(24, 39, 36, 0.22);
 }
 
-.person-card:hover .portrait.is-cover img {
+.person-card.is-link:hover .portrait.is-cover img {
   transform: translateY(-2px);
 }
 
@@ -267,7 +286,7 @@ useBoardReveal(sectionRef, [".person-card"]);
   box-shadow: 0 8px 20px rgba(24, 39, 36, 0.18);
 }
 
-.person-card:hover .portrait.is-emblem img {
+.person-card.is-link:hover .portrait.is-emblem img {
   transform: translateY(-2px);
 }
 
