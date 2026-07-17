@@ -20,7 +20,7 @@ const lineage = [
     accent: "green",
     img: null,
     note:
-      "A friend from college who fed me the best corners of the internet and showed me what it actually looks like to be relentlessly curious about the world — the first person who made curiosity feel like a way of life.",
+      "A friend from college who fed me the best corners of the internet and showed me what it actually looks like to be relentlessly curious about the world. The first person who made curiosity feel like a way of life.",
     trace: null,
   },
   {
@@ -32,7 +32,7 @@ const lineage = [
     pos: "top",
     url: "https://en.wikipedia.org/wiki/The_Selfish_Gene",
     note:
-      "The Selfish Gene and his science videos hooked me on evolution and genomics for the first time — mid-way through a CS degree I didn't much like. I was convinced I wanted to be an evolutionary biologist.",
+      "The Selfish Gene and his science videos hooked me on evolution and genomics for the first time, mid-way through a CS degree I didn't much like. I was convinced I wanted to be an evolutionary biologist.",
     trace: "The Selfish Gene",
   },
   {
@@ -54,7 +54,7 @@ const lineage = [
     pos: "70% center",
     url: "https://www.youtube.com/watch?v=EGqwXt90ZqA",
     note:
-      "“Inventing on Principle” gave me an inspiring way to think about a career and about building things at all. His work on humane interface design pushed me toward doing education better — toward making hard ideas genuinely understandable. That thread led me on to explorable explanations and people like Mike Bostock and Nicky Case.",
+      "“Inventing on Principle” gave me an inspiring way to think about a career and about building things at all. His work on humane interface design pushed me toward doing education better, toward making hard ideas genuinely understandable. That thread led me on to explorable explanations and people like Mike Bostock and Nicky Case.",
     trace: "“Inventing on Principle”",
   },
   {
@@ -65,7 +65,7 @@ const lineage = [
     emblem: true,
     url: "https://gwern.net/",
     note:
-      "In my 20s I was transfixed by his website — the obsessive attention to detail, the dense web of hyperlinks, the sheer range of things he was curious about. I'd even read his public notebook just to watch the latest notes appear. He made deep, self-directed inquiry look like a craft.",
+      "In my 20s I was transfixed by his website: the obsessive attention to detail, the dense web of hyperlinks, the sheer range of things he was curious about. I'd even read his public notebook just to watch the latest notes appear. He made deep, self-directed inquiry look like a craft.",
     trace: "gwern.net",
   },
   {
@@ -76,7 +76,7 @@ const lineage = [
     emblem: true,
     url: "https://www.lesswrong.com/",
     note:
-      "LessWrong — and the many writers there — showed me that thinking about thinking could be genuinely enjoyable. I hadn't known rationality was something you could practice and get better at. A lot of how I reason traces back to that community.",
+      "LessWrong, and the many writers there, showed me that thinking about thinking could be genuinely enjoyable. I hadn't known rationality was something you could practice and get better at. A lot of how I reason traces back to that community.",
     trace: "lesswrong.com",
   },
   {
@@ -102,7 +102,7 @@ useBoardReveal(sectionRef, [".person-card"]);
       <p class="kicker">Formative</p>
       <h2>The people who made me.</h2>
       <p class="lineage-lede">
-        A handful of people — and a community or two — most of whom I've never
+        A handful of people, and a community or two, most of whom I've never
         met. Their work shaped how I think, what I find meaningful, and a good
         deal of who I've become. There are many others; these are the ones I
         keep returning to.
@@ -128,7 +128,7 @@ useBoardReveal(sectionRef, [".person-card"]);
           <img
             v-if="d.img"
             :src="d.img"
-            :alt="d.emblem ? `${d.name} — site logo` : d.cover ? `${d.name} — ${d.trace}` : d.name"
+            :alt="d.emblem ? `${d.name} · site logo` : d.cover ? `${d.name} · ${d.trace}` : d.name"
             :style="{ objectPosition: d.pos }"
             loading="lazy"
           />

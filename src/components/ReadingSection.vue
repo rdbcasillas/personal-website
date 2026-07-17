@@ -14,28 +14,28 @@ const reading = [
     author: "George Lakoff & Mark Johnson",
     cover: coverMetaphors,
     note:
-      "Metaphors are a window into how we actually think. I'm also here because Kieran Egan argues they're badly under-used in education — that we should teach kids to build them on purpose.",
+      "Metaphors are a window into how we actually think. I'm also here because Kieran Egan argues they're badly under-used in education: we should be teaching kids to build them on purpose.",
   },
   {
     title: "An Imaginative Approach to Teaching",
     author: "Kieran Egan",
     cover: coverEgan,
     note:
-      "The practical companion to Egan's The Educated Mind — how to actually put the theory to work in a classroom.",
+      "The practical companion to Egan's The Educated Mind: how to actually put the theory to work in a classroom.",
   },
   {
     title: "Wild Fictions",
     author: "Amitav Ghosh",
     cover: coverGhosh,
     note:
-      "Finally getting into an author I've circled for years. He's best known for his fiction; this collection of essays is my way in.",
+      "I'd heard the name for years but never picked him up. Then I spotted this one in a bookstore and started reading. Just exploring the author for now.",
   },
   {
     title: "Goliath's Curse",
     author: "Luke Kemp",
     cover: coverGoliath,
     note:
-      "A history of collapse — the main patterns worth watching for as our current systems strain.",
+      "A history of collapse, and the main patterns worth watching for as our current systems strain.",
   },
 ];
 
@@ -50,7 +50,7 @@ useBoardReveal(sectionRef, [".read-item"]);
       <h2>On the nightstand.</h2>
       <p class="reading-lede">
         I almost always have a few books going at once. Here's the current
-        stack — with a line on why each one's open.
+        stack, with a line on why each one's open.
       </p>
     </div>
 

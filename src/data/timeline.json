@@ -45,7 +45,7 @@
       "shortLabel": "Marquette",
       "summary": "Moved from software into computational biology.",
       "details": [
-        "Thesis: SNPredict — a machine learning approach for detecting low-frequency variants in cancer."
+        "Thesis: SNPredict, a machine learning approach for detecting low-frequency variants in cancer."
       ],
       "links": [
         {
@@ -145,7 +145,7 @@
       "shortLabel": "OneCell",
       "summary": "iCare platform, oncology products, and bioinformatics teams.",
       "details": [
-        "Built and managed development of iCare — a platform that helps oncologists read patients' mutational profiles and match them to cancer therapies.",
+        "Built and managed development of iCare, a platform that helps oncologists read patients' mutational profiles and match them to cancer therapies.",
         "Led a team of software developers and bioinformaticians across iCare projects.",
         "Designed the interfaces and bioinformatics pipelines behind flagship products OncoDx and OncoPredikt.",
         "Owned deployments end to end, through every phase of the development lifecycle."

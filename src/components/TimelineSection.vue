@@ -187,7 +187,7 @@ defineExpose({ open });
       <p class="kicker">Timeline</p>
       <h2>Education, work, and experiments over time</h2>
       <p>
-        Twenty years wound into a single thread — from computer engineering through
+        Twenty years wound into a single thread, from computer engineering through
         bioinformatics to building communities, with each color marking a different
         kind of work.
       </p>

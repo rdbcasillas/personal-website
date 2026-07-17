@@ -13,13 +13,13 @@ const notes = {
     eyebrow: "Current question",
     accent: "var(--green)",
     title: "What helps people reason well, decide wisely, and grow?",
-    body: `<p>Reasoning well, deciding wisely, and growing — intellectually
-      <em>and</em> emotionally — might be the most important things a person can
+    body: `<p>Reasoning well, deciding wisely, and growing, intellectually
+      <em>and</em> emotionally, might be the most important things a person can
       learn. And yet almost nothing in our education systems is actually built to
       teach them, even though arguably this is what education should be about in
       the first place.</p>
-      <p>I'm solving for this by running live experiments — rationality
-      workshops, life coaching, and building communities — to find the ecosystem
+      <p>I'm solving for this by running live experiments (rationality
+      workshops, life coaching, and building communities) to find the ecosystem
       of frameworks and tools that genuinely help people make progress in these
       directions.</p>`,
   },
@@ -28,13 +28,13 @@ const notes = {
     accent: "var(--green)",
     title: "What is education for in a post-AGI world?",
     body: `<p>Intelligence is about to get cheap. Once AI handles most knowledge
-      work — and does it better than we can — we have to ask what it actually means
+      work, and does it better than we can, we have to ask what it actually means
       to <em>educate</em> a human being.</p>
-      <p>Mass schooling was built to mass-produce a certain kind of worker —
+      <p>Mass schooling was built to mass-produce a certain kind of worker:
       sorting us into narrow slots, stamping out near-copies, and quietly killing
       curiosity along the way. That maybe made some sense in an industrial economy.
-      It makes none in this one — even if we're not fully out of the old one yet.</p>
-      <p>So I think we finally have permission to start from scratch — to ask what
+      It makes none in this one, even if we're not fully out of the old one yet.</p>
+      <p>So I think we finally have permission to start from scratch: to ask what
       kinds of education systems we actually need, and whether schooling, which we
       don't necessarily have to keep, should look anything like it does today. If
       the old jobs are gone, how do people find meaning and purpose, and how do
@@ -45,18 +45,18 @@ const notes = {
     eyebrow: "Looking for",
     accent: "var(--coral)",
     title: "The wicked problems at the heart of the meta-crisis",
-    body: `<p>By <em>meta-crisis</em> I mean the way our hardest problems —
-      institutional trust, mental health, governance, climate, AI — are tangled
+    body: `<p>By <em>meta-crisis</em> I mean the way our hardest problems
+      (institutional trust, mental health, governance, climate, AI) are tangled
       together and feed each other, so none of them yields to a fix in
       isolation.</p>
       <p>Underneath them is a deeper one: our collective ability to make sense of
       the world and coordinate hasn't kept pace with the problems we've created.
       These are
       <a href="https://en.wikipedia.org/wiki/Wicked_problem" target="_blank"
-      rel="noopener noreferrer">wicked problems</a> — hard to even define, with no
+      rel="noopener noreferrer">wicked problems</a>, hard to even define, with no
       tidy solution.</p>
-      <p>I want to work with people who feel this — whatever words they use for it
-      — and who are drawn to the root patterns rather than the symptoms. Education
+      <p>I want to work with people who feel this, whatever words they use for it,
+      and who are drawn to the root patterns rather than the symptoms. Education
       and governance are where I keep landing, but the frame matters more to me
       than the field.</p>`,
   },
@@ -272,7 +272,7 @@ onBeforeUnmount(() => {
       </p>
       <p class="lede">
         I build tools and spaces that help people think more clearly,
-        learn more deeply, and grow — intellectually and emotionally.
+        learn more deeply, and grow, intellectually and emotionally.
       </p>
       <div class="hero-links" aria-label="Intro links">
         <a href="#timeline" class="hero-link" @click="$emit('open-timeline')">Open timeline</a>

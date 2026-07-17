@@ -18,7 +18,7 @@ const building = [
     url: "https://rationalityworkshops.com",
     preview: previewWorkshops,
     tagline:
-      "Workshops on practical rationality — clearer thinking, calibration, and better decisions.",
+      "Workshops on practical rationality: clearer thinking, calibration, and better decisions.",
   },
   {
     name: "Rational Resilience",
@@ -80,7 +80,7 @@ const tools = [
     url: "https://algomalibrary.netlify.app",
     preview: previewAlgoma,
     tagline:
-      "A walk-through of my actual library — drift between shelves, pull any of 647 volumes, and read what's on it.",
+      "A walk-through of my actual library: drift between shelves, pull any of 647 volumes, and read what's on it.",
   },
   {
     name: "Cadence",
@@ -373,7 +373,7 @@ useBoardReveal(sectionRef, [
     <!-- Little tools -->
     <p class="block-label">Little tools</p>
     <p class="tools-intro">
-      Small things I built for my own life — each an everyday analog object
+      Small things I built for my own life: each an everyday analog object
       rebuilt as software. All live; take one for a spin.
     </p>
     <div class="tools-grid">
@@ -425,7 +425,7 @@ useBoardReveal(sectionRef, [
           <span class="polaroid-photo">
             <img
               :src="writing.preview"
-              :alt="`${writing.name} — ${writing.latest.title}`"
+              :alt="`${writing.name} · ${writing.latest.title}`"
               loading="lazy"
             />
           </span>
