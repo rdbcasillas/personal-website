@@ -6,7 +6,7 @@ defineEmits(["open-timeline"]);
 // Highlight the nav link for whichever section currently crosses the upper
 // third of the viewport. Empty string = hero (no link highlighted).
 const activeSection = ref("");
-const sectionIds = ["timeline", "work", "lineage", "connect"];
+const sectionIds = ["timeline", "work", "formative", "connect"];
 let observer = null;
 const intersecting = new Set();
 
@@ -42,7 +42,7 @@ onBeforeUnmount(() => observer?.disconnect());
         >Timeline</a
       >
       <a href="#work" :class="{ active: activeSection === 'work' }">Work</a>
-      <a href="#lineage" :class="{ active: activeSection === 'lineage' }">Lineage</a>
+      <a href="#formative" :class="{ active: activeSection === 'formative' }">Formative</a>
       <a href="#connect" :class="{ active: activeSection === 'connect' }">Connect</a>
     </nav>
   </header>

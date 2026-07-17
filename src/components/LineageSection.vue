@@ -97,9 +97,9 @@ useBoardReveal(sectionRef, [".person-card"]);
 </script>
 
 <template>
-  <section class="lineage-section" id="lineage" ref="sectionRef">
+  <section class="lineage-section" id="formative" ref="sectionRef">
     <div class="section-intro">
-      <p class="kicker">Lineage</p>
+      <p class="kicker">Formative</p>
       <h2>The people who made me.</h2>
       <p class="lineage-lede">
         A handful of people — and a community or two — most of whom I've never
