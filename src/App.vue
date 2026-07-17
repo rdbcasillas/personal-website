@@ -4,6 +4,7 @@ import TopBar from "./components/TopBar.vue";
 import HeroSection from "./components/HeroSection.vue";
 import WorkSection from "./components/WorkSection.vue";
 import TimelineSection from "./components/TimelineSection.vue";
+import LineageSection from "./components/LineageSection.vue";
 import ConnectSection from "./components/ConnectSection.vue";
 
 const timelineRef = ref(null);
@@ -21,6 +22,7 @@ function openTimeline() {
     <HeroSection @open-timeline="openTimeline" />
     <TimelineSection ref="timelineRef" />
     <WorkSection />
+    <LineageSection />
     <ConnectSection />
   </main>
   <footer class="site-footer">
