@@ -15,12 +15,12 @@ import imgLesswrong from "../assets/previews/lineage-lesswrong.png";
 const lineage = [
   {
     initials: "V",
-    name: "A college friend",
+    name: "Vishakh",
     field: "Curiosity",
     accent: "green",
     img: null,
     note:
-      "Fed me the best corners of the internet and showed me what it actually looks like to be relentlessly curious about the world. The first person who made curiosity feel like a way of life.",
+      "A friend from college who fed me the best corners of the internet and showed me what it actually looks like to be relentlessly curious about the world — the first person who made curiosity feel like a way of life.",
     trace: null,
   },
   {
