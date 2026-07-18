@@ -14,7 +14,7 @@ const reading = [
     author: "George Lakoff & Mark Johnson",
     cover: coverMetaphors,
     note:
-      "Metaphors are a window into how we actually think. I'm also here because Kieran Egan argues they're badly under-used in education: we should be teaching kids to build them on purpose.",
+      "Metaphors are a window into how we actually think. I'm reading it as a co-reading group with a couple of friends, a few chapters at a time. Kieran Egan's case that they're badly under-used in education, and that we should be teaching kids to build them on purpose, was the other nudge.",
   },
   {
     title: "An Imaginative Approach to Teaching",
@@ -46,8 +46,8 @@ useBoardReveal(sectionRef, [".read-item"]);
 <template>
   <section class="reading-section" id="reading" ref="sectionRef">
     <div class="section-intro">
-      <p class="kicker">Currently reading</p>
-      <h2>On the nightstand.</h2>
+      <p class="kicker">Reading</p>
+      <h2>Currently reading.</h2>
       <p class="reading-lede">
         I almost always have a few books going at once. Here's the current
         stack, with a line on why each one's open.

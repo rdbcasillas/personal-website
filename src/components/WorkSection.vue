@@ -73,6 +73,46 @@ const redXArt = (() => {
     + grid + cells + xs + `</svg>`;
 })();
 
+// The Canvas runs locally off a repo, so its preview is a small SVG of the
+// board: tilted project notes with tape, on the dotted canvas.
+const canvasArt = (() => {
+  const W = 340, H = 212;
+  let dots = "";
+  for (let y = 8; y < H; y += 14) {
+    for (let x = 8; x < W; x += 14) {
+      dots += `<circle cx="${x}" cy="${y}" r="1" fill="rgba(24,39,36,0.13)"/>`;
+    }
+  }
+  const notes = [
+    { x: 24, y: 54, w: 86, h: 66, rot: -2.5, fill: "#fbc9d8", label: "Workshops" },
+    { x: 128, y: 44, w: 92, h: 70, rot: 1.6, fill: "#b8ead6", label: "Portal/EE" },
+    { x: 236, y: 58, w: 82, h: 62, rot: -1.2, fill: "#bcd8fb", label: "Music" },
+    { x: 52, y: 132, w: 88, h: 60, rot: 1.9, fill: "#e0d0fb", label: "Writing" },
+    { x: 160, y: 138, w: 90, h: 58, rot: -1.8, fill: "#fbdcb6", label: "Income/Job" },
+  ];
+  const cards = notes
+    .map((n) => {
+      const cx = n.x + n.w / 2;
+      return (
+        `<g transform="rotate(${n.rot} ${cx} ${n.y + n.h / 2})">`
+        + `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="2" fill="${n.fill}"/>`
+        + `<rect x="${cx - 12}" y="${n.y - 5}" width="24" height="10" fill="rgba(255,255,255,0.72)"/>`
+        + `<text x="${cx}" y="${n.y + n.h / 2 + 2}" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="#3a3330">${n.label}</text>`
+        + `<text x="${cx}" y="${n.y + n.h / 2 + 15}" text-anchor="middle" font-family="SFMono-Regular,Menlo,monospace" font-size="6.5" letter-spacing="0.9" fill="rgba(58,51,48,0.5)">ALL DONE ✓</text>`
+        + `</g>`
+      );
+    })
+    .join("");
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style="display:block" xmlns="http://www.w3.org/2000/svg">`
+    + `<rect x="0" y="0" width="${W}" height="${H}" fill="#efece1"/>`
+    + dots
+    + `<rect x="16" y="10" width="${W - 32}" height="24" rx="12" fill="#fffaf0" stroke="rgba(24,39,36,0.12)"/>`
+    + `<text x="30" y="26" font-family="Georgia,serif" font-size="12" fill="#3a3330">the <tspan fill="#d75f49">canvas</tspan></text>`
+    + `<text x="${W - 30}" y="26" text-anchor="end" font-family="SFMono-Regular,Menlo,monospace" font-size="8" fill="#8a7c6e">8 projects · 0 open</text>`
+    + cards
+    + `</svg>`;
+})();
+
 const tools = [
   {
     name: "Algoma Library",
@@ -97,6 +137,15 @@ const tools = [
     art: redXArt,
     tagline:
       "Don't break the chain. Cross off each day you show up and watch the streak grow.",
+  },
+  {
+    name: "The Canvas",
+    eyebrow: "The pinboard for everything",
+    url: "https://github.com/rdbcasillas/life-canvas",
+    art: canvasArt,
+    cta: "Install&nbsp;↗",
+    tagline:
+      "One infinite board for every project in my life. Notes you drag, zoom into, tie together with string, and pin what you're on right now.",
   },
 ];
 
@@ -374,7 +423,7 @@ useBoardReveal(sectionRef, [
     <p class="block-label">Little tools</p>
     <p class="tools-intro">
       Small things I built for my own life: each an everyday analog object
-      rebuilt as software. All live; take one for a spin.
+      rebuilt as software. All in daily use; take one for a spin.
     </p>
     <div class="tools-grid">
       <a
@@ -404,7 +453,8 @@ useBoardReveal(sectionRef, [
             </span>
           </span>
           <p>{{ t.tagline }}</p>
-          <span class="visit">Visit&nbsp;↗</span>
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <span class="visit" v-html="t.cta || 'Visit&nbsp;↗'"></span>
         </span>
       </a>
     </div>
@@ -654,9 +704,9 @@ useBoardReveal(sectionRef, [
   margin: 56px 0 18px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--line);
-  color: var(--muted);
+  color: var(--ink);
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 15px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
