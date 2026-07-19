@@ -13,38 +13,38 @@ const notes = {
     eyebrow: "Current question",
     accent: "var(--green)",
     title: "What helps people reason well, decide wisely, and grow?",
-    body: `<p>Reasoning well, deciding wisely, and growing, intellectually
-      <em>and</em> emotionally, might be the most important things a person can
-      learn. And yet almost nothing in our education systems is actually built to
-      teach them, even though arguably this is what education should be about in
-      the first place.</p>
-      <p>I'm solving for this by running live experiments (rationality
-      workshops, life coaching, and building communities) to find the ecosystem
-      of frameworks and tools that genuinely help people make progress in these
-      directions.</p>`,
+    body: `<p>Our education systems do a terrible job at helping us reason well,
+      decide wisely, and grow emotionally and intellectually. We are made to pick
+      up these skills as we move about in life, without any support.</p>
+      <p>I'm trying to solve for this by running experiments in the form of
+      rationality workshops, life coaching, and building communities. The goal is
+      to discover an ecosystem of frameworks and tools that genuinely help people
+      make progress in these directions. If you are working on this,
+      <a href="#connect">reach out</a>!</p>`,
   },
   education: {
     eyebrow: "Current question",
     accent: "var(--green)",
     title: "What is education for in a post-AGI world?",
-    body: `<p>Intelligence is about to get cheap. Once AI handles most knowledge
-      work, and does it better than we can, we have to ask what it actually means
-      to <em>educate</em> a human being.</p>
+    body: `<p>Intelligence is about to get very cheap. Once AI handles most
+      knowledge work and does it better than we can, we have to ask what it
+      actually means to <em>educate</em> a human being.</p>
       <p>Mass schooling was built to mass-produce a certain kind of worker:
-      sorting us into narrow slots, stamping out near-copies, and quietly killing
-      curiosity along the way. That maybe made some sense in an industrial economy.
-      It makes none in this one, even if we're not fully out of the old one yet.</p>
-      <p>So I think we finally have permission to start from scratch: to ask what
-      kinds of education systems we actually need, and whether schooling, which we
-      don't necessarily have to keep, should look anything like it does today. If
-      the old jobs are gone, how do people find meaning and purpose, and how do
-      humans and AI collaborate so they can reach their full potential instead of
-      being constrained by it?</p>`,
+      sorting us into narrow slots, stamping out specialised workers, and killing
+      curiosity along the way. That maybe made some sense in an industrial economy
+      (but it <em>really</em> didn't tbh). It makes none in the one we are
+      transitioning into.</p>
+      <p>So I think we finally have the permission and an obligation to start
+      from scratch: to ask what kinds of education systems we actually need, and
+      whether schooling, which we don't necessarily have to keep, should look
+      anything like it does today. If the old jobs are gone, how do people find
+      meaning and purpose? How do humans and AI collaborate to allow every human
+      to reach their full potential?</p>`,
   },
   collaborators: {
     eyebrow: "Looking for",
     accent: "var(--coral)",
-    title: "The wicked problems at the heart of the meta-crisis",
+    title: "Collaborators on the wicked problems at the heart of the meta-crisis",
     body: `<p>By <em>meta-crisis</em> I mean the way our hardest problems
       (institutional trust, mental health, governance, climate, AI) are tangled
       together and feed each other, so none of them yields to a fix in
@@ -69,6 +69,13 @@ function openNoteFor(key) {
 }
 function closeNote() {
   openNote.value = null;
+}
+
+// In-note anchors (e.g. "reach out" → #connect) close the sheet first, else the
+// page scrolls behind a locked overlay.
+function onNoteBodyClick(e) {
+  const a = e.target.closest("a[href^='#']");
+  if (a) closeNote();
 }
 
 function onNoteKey(e) {
@@ -355,7 +362,8 @@ onBeforeUnmount(() => {
             <button class="note-close" @click="closeNote" aria-label="Close note">×</button>
             <span class="note-eyebrow" :style="{ color: activeNote.accent }">{{ activeNote.eyebrow }}</span>
             <h3 class="note-title">{{ activeNote.title }}</h3>
-            <div class="note-body" v-html="activeNote.body"></div>
+            <!-- closeNote so an in-note jump link (#connect) doesn't leave the sheet open -->
+            <div class="note-body" v-html="activeNote.body" @click="onNoteBodyClick"></div>
           </div>
         </div>
       </Transition>
